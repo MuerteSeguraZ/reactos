@@ -278,19 +278,6 @@ EngQueryLocalTime(
     RtlTimeToTimeFields(&liLocalTime, (PTIME_FIELDS)ptf);
 }
 
-ULONG
-APIENTRY
-EngQueryPalette(
-    IN HPALETTE  hPal,
-    OUT ULONG  *piMode,
-    IN ULONG  cColors,
-    OUT ULONG  *pulColors)
-{
-    // www.osr.com/ddk/graphics/gdifncs_21t3.htm
-    UNIMPLEMENTED;
-    return 0;
-}
-
 DWORD
 APIENTRY
 EngSetPrinterData(
