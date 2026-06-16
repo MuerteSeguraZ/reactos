@@ -1,0 +1,24 @@
+[Version]
+Signature="$ReactOS$"
+Class=System
+ClassGUID={4D36E97D-E325-11CE-BFC1-08002BE10318}
+Provider=%ReactOS%
+LayoutFile=layout.inf
+
+[DefaultInstall]
+CopyFiles=Unimodem.CopyFiles
+AddReg=Unimodem.AddReg
+
+[Unimodem.CopyFiles]
+unimodem.tsp
+
+[Unimodem.AddReg]
+HKLM,SOFTWARE\Microsoft\Windows\CurrentVersion\Telephony\Providers,NumProviders,0x00010001,1
+HKLM,SOFTWARE\Microsoft\Windows\CurrentVersion\Telephony\Providers,ProviderID0,0x00010001,1
+HKLM,SOFTWARE\Microsoft\Windows\CurrentVersion\Telephony\Providers,ProviderFilename0,,"unimodem.tsp"
+
+[DestinationDirs]
+Unimodem.CopyFiles=11 ; %SystemRoot%\system32
+
+[Strings]
+ReactOS="ReactOS"

@@ -1782,6 +1782,9 @@ HKLM,"SOFTWARE\Microsoft\Windows\CurrentVersion\Telephony\Locations","DisableCal
 HKLM,"SOFTWARE\Microsoft\Windows\CurrentVersion\Telephony\Locations","DisableCallWaiting1",2,"70#,"
 HKLM,"SOFTWARE\Microsoft\Windows\CurrentVersion\Telephony\Locations","DisableCallWaiting2",2,"1170,"
 HKLM,"SOFTWARE\Microsoft\Windows\CurrentVersion\Telephony\tapi3",,0x00000012
+HKLM,"SOFTWARE\Microsoft\Windows\CurrentVersion\Telephony\Providers","NumProviders",0x00010001,0x00000001
+HKLM,"SOFTWARE\Microsoft\Windows\CurrentVersion\Telephony\Providers","ProviderID0",0x00010001,0x00000001
+HKLM,"SOFTWARE\Microsoft\Windows\CurrentVersion\Telephony\Providers","ProviderFilename0",0x00000000,"unimodem.tsp"
 HKLM,"SOFTWARE\Microsoft\Windows\CurrentVersion\Telephony\Terminal Manager",,0x00000012
 
 ; Country Codes

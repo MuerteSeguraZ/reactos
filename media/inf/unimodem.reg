@@ -1,0 +1,7 @@
+REGEDIT4
+
+; Register unimodem.tsp as a TAPI service provider
+[HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Telephony\Providers]
+"NumProviders"=dword:00000001
+"ProviderID0"=dword:00000001
+"ProviderFilename0"="unimodem.tsp"
