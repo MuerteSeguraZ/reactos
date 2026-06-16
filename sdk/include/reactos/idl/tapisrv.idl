@@ -1,0 +1,88 @@
+/*
+ * TAPI service (tapisrv) RPC interface definition
+ */
+
+typedef unsigned long DWORD;
+typedef unsigned char BYTE;
+typedef wchar_t WCHAR;
+
+[
+    uuid(2f5f6521-cb55-1059-b446-00df0bce31db),
+    version(1.0),
+    pointer_default(unique),
+    endpoint("ncacn_np:[\\pipe\\tapsrv]")
+]
+interface ITapSrv
+{
+    DWORD __stdcall TapSrvInitialize(
+        [in] handle_t hBinding,
+        [in] DWORD dwAPIVersion,
+        [out] DWORD *lpdwNumDevs,
+        [out] DWORD *lpdwAppHandle);
+
+    DWORD __stdcall TapSrvShutdown(
+        [in] handle_t hBinding,
+        [in] DWORD dwAppHandle);
+
+    DWORD __stdcall TapSrvNegotiateAPIVersion(
+        [in] handle_t hBinding,
+        [in] DWORD dwDeviceID,
+        [in] DWORD dwAPILowVersion,
+        [in] DWORD dwAPIHighVersion,
+        [out] DWORD *lpdwAPIVersion);
+
+    DWORD __stdcall TapSrvGetDevCaps(
+        [in] handle_t hBinding,
+        [in] DWORD dwDeviceID,
+        [in] DWORD dwAPIVersion,
+        [in] DWORD dwExtVersion,
+        [in] DWORD dwTotalSize,
+        [out, size_is(dwTotalSize)] BYTE *lpDevCaps);
+
+    DWORD __stdcall TapSrvGetAddressCaps(
+        [in] handle_t hBinding,
+        [in] DWORD dwDeviceID,
+        [in] DWORD dwAddressID,
+        [in] DWORD dwAPIVersion,
+        [in] DWORD dwExtVersion,
+        [in] DWORD dwTotalSize,
+        [out, size_is(dwTotalSize)] BYTE *lpAddressCaps);
+
+    DWORD __stdcall TapSrvOpenLine(
+        [in] handle_t hBinding,
+        [in] DWORD dwAppHandle,
+        [in] DWORD dwDeviceID,
+        [in] DWORD dwAPIVersion,
+        [in] DWORD dwMediaModes,
+        [in] DWORD dwPrivileges,
+        [out] DWORD *lpdwLineHandle);
+
+    DWORD __stdcall TapSrvCloseLine(
+        [in] handle_t hBinding,
+        [in] DWORD dwLineHandle);
+
+    DWORD __stdcall TapSrvMakeCall(
+        [in] handle_t hBinding,
+        [in] DWORD dwLineHandle,
+        [in, string] WCHAR *lpszDestAddress,
+        [in] DWORD dwCountryCode,
+        [out] DWORD *lpdwCallHandle);
+
+    DWORD __stdcall TapSrvDrop(
+        [in] handle_t hBinding,
+        [in] DWORD dwCallHandle);
+
+    DWORD __stdcall TapSrvGetCallStatus(
+        [in] handle_t hBinding,
+        [in] DWORD dwCallHandle,
+        [in] DWORD dwTotalSize,
+        [out, size_is(dwTotalSize)] BYTE *lpCallStatus);
+
+    DWORD __stdcall TapSrvGetEvent(
+        [in]  handle_t hBinding,
+        [in]  DWORD dwAppHandle,
+        [out] DWORD *lpdwMsg,
+        [out] DWORD *lpdwParam1,
+        [out] DWORD *lpdwParam2,
+        [out] DWORD *lpdwParam3);
+}

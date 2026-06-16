@@ -2120,6 +2120,19 @@ HKLM,"SYSTEM\CurrentControlSet\Services\Seclogon","Type",0x00010001,0x00000020
 HKLM,"SYSTEM\CurrentControlSet\Services\Seclogon\Parameters","ServiceDll",0x00020000,"%SystemRoot%\system32\seclogon.dll"
 HKLM,"SYSTEM\CurrentControlSet\Services\Seclogon\Parameters","ServiceMain",0x00000000,"SvcEntry_Seclogon"
 
+; TAPI service 
+HKLM,"SYSTEM\CurrentControlSet\Services\TapiSrv","DependOnService",0x00010000,"RPCSS"
+HKLM,"SYSTEM\CurrentControlSet\Services\TapiSrv","Description",0x00000000,"Provides Telephony API (TAPI) support for programs that control telephony devices."
+HKLM,"SYSTEM\CurrentControlSet\Services\TapiSrv","DisplayName",0x00000000,"Telephony"
+HKLM,"SYSTEM\CurrentControlSet\Services\TapiSrv","ErrorControl",0x00010001,0x00000001
+HKLM,"SYSTEM\CurrentControlSet\Services\TapiSrv","Group",0x00000000,"TDI"
+HKLM,"SYSTEM\CurrentControlSet\Services\TapiSrv","ImagePath",0x00020000,"%SystemRoot%\system32\svchost.exe -k netsvcs"
+HKLM,"SYSTEM\CurrentControlSet\Services\TapiSrv","ObjectName",0x00000000,"LocalSystem"
+HKLM,"SYSTEM\CurrentControlSet\Services\TapiSrv","Start",0x00010001,0x00000003
+HKLM,"SYSTEM\CurrentControlSet\Services\TapiSrv","Type",0x00010001,0x00000020
+HKLM,"SYSTEM\CurrentControlSet\Services\TapiSrv\Parameters","ServiceDll",0x00020000,"%SystemRoot%\system32\tapisrv.dll"
+HKLM,"SYSTEM\CurrentControlSet\Services\TapiSrv\Parameters","ServiceMain",0x00000000,"SvcEntry_TapiSrv"
+
 ; Spooler service
 HKLM,"SYSTEM\CurrentControlSet\Services\Spooler","DependOnService",0x00010000,"RPCSS"
 HKLM,"SYSTEM\CurrentControlSet\Services\Spooler","Description",0x00000000,%SPOOLER_SERVICE_DESCRIPTION%
