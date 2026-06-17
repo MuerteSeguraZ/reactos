@@ -2,7 +2,7 @@
  * PROJECT:     ReactOS TAPI Service
  * LICENSE:     MIT (https://spdx.org/licenses/MIT)
  * PURPOSE:     Handle table (apps, lines, calls)
- * COPYRIGHT:   Copyright 2026 ReactOS Contributors
+ * COPYRIGHT:   Copyright 2026 Alex Mendoza
  */
 
 #include "precomp.h"
