@@ -12,6 +12,7 @@
 #define CPUID_X2APIC_FEATURE_BIT 21
 #define X2APIC_MSR_ICR 0x00000830
 #define X2APIC_MSR_SELF_IPI 0x0000083F
+#define X2APIC_SPURIOUS_VECTOR 0xDF
 
 #include <pshpack1.h>
 typedef union _APIC_BASE_ADDRESS_REGISTER
@@ -94,3 +95,22 @@ X2ApicIsSupported(VOID);
 VOID
 NTAPI
 X2ApicEnable(VOID);
+
+#include <pshpack1.h>
+typedef union _APIC_SPURIOUS_INERRUPT_REGISTER
+{
+    UINT32 Long;
+    struct
+    {
+        UINT32 Vector:8;
+        UINT32 SoftwareEnable:1;
+        UINT32 ReservedMBZ:23;
+    };
+} APIC_SPURIOUS_INERRUPT_REGISTER;
+#include <poppack.h>
+
+VOID __cdecl X2ApicSpuriousService(VOID);
+
+VOID
+NTAPI
+X2ApicInitializeLocalApic(ULONG Cpu);
