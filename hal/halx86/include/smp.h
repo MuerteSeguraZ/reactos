@@ -11,7 +11,7 @@
 typedef struct _PROCESSOR_IDENTITY
 {
     UCHAR ProcessorId;
-    UCHAR LapicId;
+    ULONG LapicId;
     BOOLEAN ProcessorStarted;
     BOOLEAN BSPCheck;
     PKPRCB ProcessorPrcb;
@@ -30,9 +30,12 @@ typedef struct _HALP_APIC_INFO_TABLE
     ULONG IoApicIrqBase[HALP_APIC_INFO_TABLE_IOAPIC_NUMBER]; // Global system interrupt base
 } HALP_APIC_INFO_TABLE, *PHALP_APIC_INFO_TABLE;
 
+extern HALP_APIC_INFO_TABLE HalpApicInfoTable;
+
 /* HALP_APIC_INFO_TABLE.ApicMode values */
 // TODO: What are the other modes/values?
 #define HALP_APIC_MODE_LEGACY 0x00000010
+#define HALP_APIC_MODE_X2APIC 0x00000020
 
 VOID
 HalpParseApicTables(

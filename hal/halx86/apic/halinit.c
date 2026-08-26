@@ -17,6 +17,16 @@ VOID
 NTAPI
 ApicInitializeLocalApic(ULONG Cpu);
 
+BOOLEAN
+NTAPI
+X2ApicIsSupported(VOID);
+
+VOID
+NTAPI
+X2ApicInitializeLocalApic(ULONG Cpu);
+
+static ULONG HalpApicMode = HALP_APIC_MODE_LEGACY;
+
 /* FUNCTIONS ****************************************************************/
 
 VOID
@@ -28,12 +38,25 @@ HalpInitProcessor(
     if (ProcessorNumber == 0)
     {
         HalpParseApicTables(LoaderBlock);
+
+        if (X2ApicIsSupported())
+        {
+            HalpApicMode = HALP_APIC_MODE_X2APIC;
+        }
     }
 
     HalpSetupProcessorsTable(ProcessorNumber);
 
-    /* Initialize the local APIC for this cpu */
-    ApicInitializeLocalApic(ProcessorNumber);
+    /* Initialize the local APIC for this cpu, using whichever mode was
+       decided for the whole system above */
+    if (HalpApicMode == HALP_APIC_MODE_X2APIC)
+    {
+        X2ApicInitializeLocalApic(ProcessorNumber);
+    }
+    else
+    {
+        ApicInitializeLocalApic(ProcessorNumber);
+    }
 
     /* Initialize profiling data (but don't start it) */
     HalInitializeProfiling();
@@ -45,7 +68,8 @@ HalpInitProcessor(
 VOID
 HalpInitPhase0(IN PLOADER_PARAMETER_BLOCK LoaderBlock)
 {
-    DPRINT1("Using HAL: APIC %s %s\n",
+    DPRINT1("Using HAL: APIC %s %s %s\n",
+            (HalpApicMode == HALP_APIC_MODE_X2APIC) ? "x2APIC" : "xAPIC",
             (HalpBuildType & PRCB_BUILD_UNIPROCESSOR) ? "UP" : "SMP",
             (HalpBuildType & PRCB_BUILD_DEBUG) ? "DBG" : "REL");
 
