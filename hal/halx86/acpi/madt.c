@@ -4,6 +4,7 @@
  * PURPOSE:     Source File for MADT Table parsing
  * COPYRIGHT:   Copyright 2021 Justin Miller <justinmiller100@gmail.com>
  *              Copyright 2023 Serge Gautherie <reactos-git_serge_171003@gautherie.fr>
+ *              Copyright 2026 Alex Mendoza <05alex.mendozaa@gmail.com>
  */
 
 /* INCLUDES *******************************************************************/
@@ -49,6 +50,24 @@ extern ULONG HalpPicVectorRedirect[16];
 #endif
 
 /* FUNCTIONS ******************************************************************/
+
+static
+BOOLEAN
+HalpIsProcessorIdentityDuplicate(
+    _In_ UCHAR ProcessorId)
+{
+    ULONG i;
+
+    for (i = 0; i < HalpApicInfoTable.ProcessorCount; i++)
+    {
+        if (HalpProcessorIdentity[i].ProcessorId == ProcessorId)
+        {
+            return TRUE;
+        }
+    }
+
+    return FALSE;
+}
 
 // Note: HalpParseApicTables() is called early, so its DPRINT*() do nothing.
 VOID
@@ -148,10 +167,60 @@ HalpParseApicTables(
                     break;
                 }
 
+                if (HalpIsProcessorIdentityDuplicate(LocalApic->ProcessorId))
+                {
+                    DPRINT00("  Skipped: duplicate ProcessorId\n");
+                    break;
+                }
+
                 // Note: ProcessorId and Id are not validated in any way (yet).
                 HalpProcessorIdentity[HalpApicInfoTable.ProcessorCount].ProcessorId =
                     LocalApic->ProcessorId;
                 HalpProcessorIdentity[HalpApicInfoTable.ProcessorCount].LapicId = LocalApic->Id;
+
+                HalpApicInfoTable.ProcessorCount++;
+
+                break;
+            }
+            case ACPI_MADT_TYPE_LOCAL_X2APIC:
+            {
+                ACPI_MADT_LOCAL_X2APIC *LocalX2Apic = (ACPI_MADT_LOCAL_X2APIC *)AcpiHeader;
+
+                if (AcpiHeader->Length != sizeof(*LocalX2Apic))
+                {
+                    DPRINT01("Type/Length mismatch: %p, %u\n", AcpiHeader, AcpiHeader->Length);
+                    return;
+                }
+
+                DPRINT00(" Local X2Apic, Processor %lu: Uid %u, Id %u, LapicFlags %08X\n",
+                         HalpApicInfoTable.ProcessorCount,
+                         LocalX2Apic->Uid, LocalX2Apic->LocalApicId, LocalX2Apic->LapicFlags);
+
+                if (!(LocalX2Apic->LapicFlags & (LAPIC_FLAG_ONLINE_CAPABLE | LAPIC_FLAG_ENABLED)))
+                {
+                    DPRINT00("  Ignored: unusable\n");
+                    break;
+                }
+
+                if (HalpApicInfoTable.ProcessorCount == _countof(HalpStaticProcessorIdentity))
+                {
+                    DPRINT00("  Skipped: array is full\n");
+                    break;
+                }
+
+                if (HalpIsProcessorIdentityDuplicate((UCHAR)LocalX2Apic->Uid))
+                {
+                    DPRINT00("  Skipped: duplicate ProcessorId/Uid\n");
+                    break;
+                }
+
+                /* Uid maps to the same role as ACPI_MADT_LOCAL_APIC.ProcessorId, so
+                   truncation to UCHAR is "acceptable" here, ProcessorId is only
+                   ever used as an OS internal index, unlike LapicId */
+                HalpProcessorIdentity[HalpApicInfoTable.ProcessorCount].ProcessorId =
+                    (UCHAR)LocalX2Apic->Uid;
+                HalpProcessorIdentity[HalpApicInfoTable.ProcessorCount].LapicId =
+                    LocalX2Apic->LocalApicId;
 
                 HalpApicInfoTable.ProcessorCount++;
 
