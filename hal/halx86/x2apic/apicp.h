@@ -114,3 +114,52 @@ VOID __cdecl X2ApicSpuriousService(VOID);
 VOID
 NTAPI
 X2ApicInitializeLocalApic(ULONG Cpu);
+
+typedef enum _APIC_MT
+{
+    APIC_MT_Fixed = 0,
+    APIC_MT_LowestPriority = 1,
+    APIC_MT_SMI = 2,
+    APIC_MT_RemoteRead = 3,
+    APIC_MT_NMI = 4,
+    APIC_MT_INIT = 5,
+    APIC_MT_Startup = 6,
+    APIC_MT_ExtInt = 7,
+} APIC_MT;
+
+/* Trigger Mode */
+typedef enum _APIC_TGM
+{
+    APIC_TGM_Edge,
+    APIC_TGM_Level
+} APIC_TGM;
+
+typedef enum _APIC_DM
+{
+    APIC_DM_Physical,
+    APIC_DM_Logical
+} APIC_DM;
+
+/* Destination Short Hand */
+typedef enum _APIC_DSH
+{
+    APIC_DSH_Destination,
+    APIC_DSH_Self,
+    APIC_DSH_AllIncludingSelf,
+    APIC_DSH_AllExcludingSelf
+} APIC_DSH;
+
+VOID
+NTAPI
+X2ApicRequestGlobalInterrupt(
+    _In_ ULONG DestinationProcessor,
+    _In_ UCHAR Vector,
+    _In_ APIC_MT MessageType,
+    _In_ APIC_TGM TriggerMode,
+    _In_ APIC_DSH DestinationShortHand);
+
+VOID
+NTAPI
+X2ApicStartApplicationProcessor(
+    _In_ ULONG NTProcessorNumber,
+    _In_ PHYSICAL_ADDRESS StartupLoc);
