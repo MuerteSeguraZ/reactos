@@ -96,6 +96,10 @@ VOID
 NTAPI
 X2ApicEnable(VOID);
 
+VOID
+NTAPI
+X2ApicEoi(VOID);
+
 #include <pshpack1.h>
 typedef union _APIC_SPURIOUS_INERRUPT_REGISTER
 {

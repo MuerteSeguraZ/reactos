@@ -36,7 +36,7 @@ X2ApicIsSupported(VOID)
 /**
  * @brief
  * Switches the current processor's local APIC into x2APIC mode.
- * 
+ *
  * @remarks
  * This must only be called after verifying support with X2ApicIsSupported,
  * and before you try to do any MSR based register access.
@@ -91,4 +91,23 @@ X2ApicInitializeLocalApic(ULONG Cpu)
     SpIntRegister.Vector = X2APIC_SPURIOUS_VECTOR;
     SpIntRegister.SoftwareEnable = 1;
     X2ApicWrite(APIC_SIVR, SpIntRegister.Long);
+}
+
+/**
+ * @brief
+ * Signals End Of Interrupt to the local x2APIC, allowing further
+ * interrupts from the same source to be delivered.
+ *
+ * @remarks
+ * Unlike some xAPIC quirks, x2APICs EOI register is only writeable and
+ * takes a fixed value of 0.
+ *
+ * @return
+ * None.
+ **/
+VOID
+NTAPI
+X2ApicEoi(VOID)
+{
+    X2ApicWrite(APIC_EOI, 0);
 }
