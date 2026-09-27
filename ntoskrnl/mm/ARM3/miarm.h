@@ -520,6 +520,20 @@ typedef struct _MM_SESSION_SPACE
     LONG ImageLoadingCount;
 } MM_SESSION_SPACE, *PMM_SESSION_SPACE;
 
+typedef struct _MI_VAD_SECURE_ENTRY
+{
+    LIST_ENTRY ListEntry;
+    PMMVAD Vad;
+    MMADDRESS_LIST Range;
+    ULONG ProbeMode;
+} MI_VAD_SECURE_ENTRY, *PMI_VAD_SECURE_ENTRY;
+
+typedef struct _MI_SECURE_CONTEXT
+{
+    ULONG VadCount;
+    PMI_VAD_SECURE_ENTRY SecureEntries[1];
+} MI_SECURE_CONTEXT, *PMI_SECURE_CONTEXT;
+
 extern PMM_SESSION_SPACE MmSessionSpace;
 extern MMPTE HyperTemplatePte;
 extern MMPDE ValidKernelPde;
@@ -2231,6 +2245,22 @@ MiCheckSecuredVad(
     IN PVOID Base,
     IN SIZE_T Size,
     IN ULONG ProtectionMask
+);
+
+NTSTATUS
+NTAPI
+MiInsertSecureVad(
+    _In_ PMMVAD Vad,
+    _In_ ULONG_PTR StartAddress,
+    _In_ ULONG_PTR EndAddress,
+    _In_ ULONG ProbeMode,
+    _Out_ PMI_VAD_SECURE_ENTRY *SecureEntry
+);
+
+VOID
+NTAPI
+MiRemoveSecureVad(
+    _In_ PMI_VAD_SECURE_ENTRY SecureEntry
 );
 
 VOID

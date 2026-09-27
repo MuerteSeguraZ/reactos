@@ -5,6 +5,7 @@
  * PURPOSE:         ARM Memory Manager VAD Node Algorithms
  * PROGRAMMERS:     ReactOS Portable Systems Group
  *                  Timo Kreuzer (timo.kreuzer@reactos.org)
+ *                  Alex Mendoza (05alex.mendozaa@gmail.com)
  */
 
 /* INCLUDES *******************************************************************/
@@ -818,6 +819,9 @@ MiCheckSecuredVad(IN PMMVAD Vad,
                   IN ULONG ProtectionMask)
 {
     ULONG_PTR StartAddress, EndAddress;
+    PLIST_ENTRY NextEntry;
+    PMI_VAD_SECURE_ENTRY SecureEntry;
+    BOOLEAN ReadOnly;
 
     /* Compute start and end address */
     StartAddress = (ULONG_PTR)Base;
@@ -842,9 +846,6 @@ MiCheckSecuredVad(IN PMMVAD Vad,
         ProtectionMask = 0;
     }
 
-    /* ARM3 doesn't support this yet */
-    ASSERT(Vad->u2.VadFlags2.MultipleSecured == 0);
-
     /* Is this a one-secured VAD, like a TEB or PEB? */
     if (Vad->u2.VadFlags2.OneSecured)
     {
@@ -859,13 +860,43 @@ MiCheckSecuredVad(IN PMMVAD Vad,
                 return STATUS_INVALID_PAGE_PROTECTION;
             }
 
-            /* ARM3 doesn't have read-only VADs yet */
-            ASSERT(Vad->u2.VadFlags2.ReadOnly == 0);
-
-            /* Check if read-write protections are allowed */
-            if (MmReadWrite[ProtectionMask] < MM_READ_WRITE_ALLOWED)
+            ReadOnly = Vad->u2.VadFlags2.ReadOnly;
+            if (MmReadWrite[ProtectionMask] < (ReadOnly ? MM_READ_ONLY_ALLOWED : MM_READ_WRITE_ALLOWED))
             {
-                DPRINT1("Invalid protection mask for RW access!\n");
+                DPRINT1("Invalid protection mask for secured access!\n");
+                return STATUS_INVALID_PAGE_PROTECTION;
+            }
+        }
+
+        return STATUS_SUCCESS;
+    }
+
+    /* Probably several, probably overlapping, secured ranges span this VAD */
+    if (Vad->u2.VadFlags2.MultipleSecured)
+    {
+        for (NextEntry = ((PMMVAD_LONG)Vad)->u3.List.Flink;
+             NextEntry != &((PMMVAD_LONG)Vad)->u3.List;
+             NextEntry = NextEntry->Flink)
+        {
+            SecureEntry = CONTAINING_RECORD(NextEntry, MI_VAD_SECURE_ENTRY, ListEntry);
+
+            /* Skip ranges this operation doesn't touch */
+            if ((StartAddress > SecureEntry->Range.EndVpn) ||
+                (EndAddress < SecureEntry->Range.StartVpn))
+            {
+                continue;
+            }
+
+            if (ProtectionMask & MM_DECOMMIT)
+            {
+                DPRINT1("Not allowed to change protection on guard page!\n");
+                return STATUS_INVALID_PAGE_PROTECTION;
+            }
+
+            ReadOnly = (SecureEntry->ProbeMode == PAGE_READONLY);
+            if (MmReadWrite[ProtectionMask] < (ReadOnly ? MM_READ_ONLY_ALLOWED : MM_READ_WRITE_ALLOWED))
+            {
+                DPRINT1("Invalid protection mask for secured access!\n");
                 return STATUS_INVALID_PAGE_PROTECTION;
             }
         }
@@ -873,6 +904,120 @@ MiCheckSecuredVad(IN PMMVAD Vad,
 
     /* All good, allow the change */
     return STATUS_SUCCESS;
+}
+
+NTSTATUS
+NTAPI
+MiInsertSecureVad(_In_ PMMVAD Vad,
+                  _In_ ULONG_PTR StartAddress,
+                  _In_ ULONG_PTR EndAddress,
+                  _In_ ULONG ProbeMode,
+                  _Out_ PMI_VAD_SECURE_ENTRY *SecureEntry)
+{
+    PMMVAD_LONG LongVad = (PMMVAD_LONG)Vad;
+    PMI_VAD_SECURE_ENTRY Entry, FirstEntry;
+
+    if (!Vad->u2.VadFlags2.LongVad) return STATUS_INVALID_PARAMETER;
+
+    Entry = ExAllocatePoolWithTag(NonPagedPool, sizeof(MI_VAD_SECURE_ENTRY), 'eSaV');
+    if (!Entry) return STATUS_INSUFFICIENT_RESOURCES;
+
+    Entry->Vad = Vad;
+    Entry->Range.StartVpn = StartAddress;
+    Entry->Range.EndVpn = EndAddress;
+    Entry->ProbeMode = ProbeMode;
+
+    if (Vad->u2.VadFlags2.MultipleSecured)
+    {
+        /* Already tracking a list on this VAD, just add to it */
+        InsertTailList(&LongVad->u3.List, &Entry->ListEntry);
+    }
+    else if (Vad->u2.VadFlags2.OneSecured)
+    {
+        /* Second caller to secure this VAD, move the inline range into a list */
+        FirstEntry = ExAllocatePoolWithTag(NonPagedPool, sizeof(MI_VAD_SECURE_ENTRY), 'eSaV');
+        if (!FirstEntry)
+        {
+            ExFreePoolWithTag(Entry, 'eSaV');
+            return STATUS_INSUFFICIENT_RESOURCES;
+        }
+
+        FirstEntry->Vad = Vad;
+        FirstEntry->Range = LongVad->u3.Secured;
+        FirstEntry->ProbeMode = Vad->u2.VadFlags2.ReadOnly ? PAGE_READONLY : PAGE_READWRITE;
+
+        InitializeListHead(&LongVad->u3.List);
+        InsertTailList(&LongVad->u3.List, &FirstEntry->ListEntry);
+        InsertTailList(&LongVad->u3.List, &Entry->ListEntry);
+
+        Vad->u2.VadFlags2.OneSecured = 0;
+        Vad->u2.VadFlags2.MultipleSecured = 1;
+    }
+    else
+    {
+        /* First time this VAD is secured, use the inline fast path */
+        LongVad->u3.Secured.StartVpn = StartAddress;
+        LongVad->u3.Secured.EndVpn = EndAddress;
+        Vad->u2.VadFlags2.OneSecured = 1;
+        Vad->u2.VadFlags2.ReadOnly = (ProbeMode == PAGE_READONLY);
+    }
+
+    if (!Vad->u.VadFlags.NoChange)
+    {
+        Vad->u.VadFlags.NoChange = 1;
+        Vad->u2.VadFlags2.SecNoChange = 1;
+    }
+
+    *SecureEntry = Entry;
+    return STATUS_SUCCESS;
+}
+
+VOID
+NTAPI
+MiRemoveSecureVad(
+    _In_ PMI_VAD_SECURE_ENTRY SecureEntry)
+{
+    PMMVAD Vad = SecureEntry->Vad;
+    PMMVAD_LONG LongVad = (PMMVAD_LONG)Vad;
+    PMI_VAD_SECURE_ENTRY LastEntry;
+
+    if (Vad->u2.VadFlags2.MultipleSecured)
+    {
+        RemoveEntryList(&SecureEntry->ListEntry);
+
+        if (IsListEmpty(&LongVad->u3.List))
+        {
+            Vad->u2.VadFlags2.MultipleSecured = 0;
+        }
+        else if (LongVad->u3.List.Flink == LongVad->u3.List.Blink)
+        {
+            /* Exactly one range left, fold it back into the inline fast path */
+            LastEntry = CONTAINING_RECORD(LongVad->u3.List.Flink, MI_VAD_SECURE_ENTRY, ListEntry);
+            RemoveEntryList(&LastEntry->ListEntry);
+
+            LongVad->u3.Secured = LastEntry->Range;
+            Vad->u2.VadFlags2.ReadOnly = (LastEntry->ProbeMode == PAGE_READONLY);
+            Vad->u2.VadFlags2.MultipleSecured = 0;
+            Vad->u2.VadFlags2.OneSecured = 1;
+
+            ExFreePoolWithTag(LastEntry, 'eSaV');
+        }
+    }
+    else
+    {
+        ASSERT(Vad->u2.VadFlags2.OneSecured == 1);
+        Vad->u2.VadFlags2.OneSecured = 0;
+    }
+
+    if (!Vad->u2.VadFlags2.OneSecured &&
+        !Vad->u2.VadFlags2.MultipleSecured &&
+        Vad->u2.VadFlags2.SecNoChange)
+    {
+        Vad->u.VadFlags.NoChange = 0;
+        Vad->u2.VadFlags2.SecNoChange = 0;
+    }
+
+    ExFreePoolWithTag(SecureEntry, 'eSaV');
 }
 
 /* EOF */

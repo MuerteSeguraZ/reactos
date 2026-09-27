@@ -2751,27 +2751,157 @@ MmGetVirtualForPhysical(IN PHYSICAL_ADDRESS PhysicalAddress)
     return 0;
 }
 
-/*
- * @unimplemented
- */
-PVOID
+/**
+ * @brief
+ * Secures a range of UM virtual memory so it cannot be freed and
+ * its page protection cannot be made more restrictive than ProbeMode
+ * allows, until MmUnsecureVirtualMemory is called with the returned handle.
+ *
+ * @param[in] Address
+ * Start of the virtual address range to secure.
+ *
+ * @param[in] Size
+ * Size in bytes of the range to secure.
+ *
+ * @param[in] ProbeMode
+ * PAGE_READWRITE or PAGE_READONLY.
+ *
+ * @return
+ * A handle to pass to MmUnsecureVirtualMemory on success, NULL if the
+ * range isn't fully backed by VADs or ProbeMode is invalid.
+ **/
+HANDLE
 NTAPI
 MmSecureVirtualMemory(IN PVOID Address,
                       IN SIZE_T Length,
-                      IN ULONG Mode)
+                      IN ULONG ProbeMode)
 {
-    static ULONG Warn; if (!Warn++) UNIMPLEMENTED;
-    return Address;
+    PMMSUPPORT AddressSpace;
+    PMMVAD Vad, PreviousVad, CurrentVad;
+    PMMADDRESS_NODE Node;
+    PMI_SECURE_CONTEXT SecureContext;
+    ULONG_PTR StartAddress, EndAddress, ClipStart, ClipEnd;
+    ULONG VadCount, i;
+    NTSTATUS Status;
+
+    /* Only these two probe modes are documented */
+    if ((ProbeMode != PAGE_READONLY) && (ProbeMode != PAGE_READWRITE)) return NULL;
+    if (Length == 0) return NULL;
+
+    /* Page align the range to secure */
+    StartAddress = (ULONG_PTR)PAGE_ALIGN(Address);
+    EndAddress = ((ULONG_PTR)Address + Length - 1) | (PAGE_SIZE - 1);
+    if ((EndAddress < StartAddress) || (EndAddress > (ULONG_PTR)MM_HIGHEST_USER_ADDRESS))
+    {
+        return NULL;
+    }
+
+    AddressSpace = MmGetCurrentAddressSpace();
+    MmLockAddressSpace(AddressSpace);
+
+    /* Find the VAD that covers the start of the range */
+    Vad = MiLocateAddress((PVOID)StartAddress);
+    if (!Vad)
+    {
+        MmUnlockAddressSpace(AddressSpace);
+        return NULL;
+    }
+
+    /* Walk forward, counting VADs, and make sure there are no holes */
+    VadCount = 1;
+    PreviousVad = Vad;
+    while (((PreviousVad->EndingVpn + 1) << PAGE_SHIFT) <= EndAddress)
+    {
+        Node = MiGetNextNode((PMMADDRESS_NODE)PreviousVad);
+        if (!Node)
+        {
+            MmUnlockAddressSpace(AddressSpace);
+            return NULL;
+        }
+
+        CurrentVad = (PMMVAD)Node;
+        if (CurrentVad->StartingVpn != PreviousVad->EndingVpn + 1)
+        {
+            /* A gap! We can't secure unmapped memory! */
+            MmUnlockAddressSpace(AddressSpace);
+            return NULL;
+        }
+
+        PreviousVad = CurrentVad;
+        VadCount++;
+    }
+
+    /* Allocate the handle, plus one slot per VAD the range spans */
+    SecureContext = ExAllocatePoolWithTag(NonPagedPool,
+                                           FIELD_OFFSET(MI_SECURE_CONTEXT, SecureEntries[VadCount]),
+                                           'CSaV');
+    if (!SecureContext)
+    {
+        MmUnlockAddressSpace(AddressSpace);
+        return NULL;
+    }
+
+    SecureContext->VadCount = VadCount;
+
+    /* For the second pass, secure each VAD's slice of the range, clipped to that VAD */
+    CurrentVad = Vad;
+    for (i = 0; i < VadCount; i++)
+    {
+        ClipStart = max(StartAddress, CurrentVad->StartingVpn << PAGE_SHIFT);
+        ClipEnd = min(EndAddress, ((CurrentVad->EndingVpn + 1) << PAGE_SHIFT) - 1);
+
+        Status = MiInsertSecureVad(CurrentVad,
+                                    ClipStart,
+                                    ClipEnd,
+                                    ProbeMode,
+                                    &SecureContext->SecureEntries[i]);
+        if (!NT_SUCCESS(Status))
+        {
+            /* Undo everything we already secured and bail out */
+            while (i > 0) MiRemoveSecureVad(SecureContext->SecureEntries[--i]);
+            ExFreePoolWithTag(SecureContext, 'CSaV');
+            MmUnlockAddressSpace(AddressSpace);
+            return NULL;
+        }
+
+        if (i + 1 < VadCount) CurrentVad = (PMMVAD)MiGetNextNode((PMMADDRESS_NODE)CurrentVad);
+    }
+
+    MmUnlockAddressSpace(AddressSpace);
+    return (HANDLE)SecureContext;
 }
 
-/*
- * @unimplemented
- */
+/**
+ * @brief
+ * Reverses a previous MmSecureVirtualMemory call and frees the handle.
+ *
+ * @param[in] SecureMem
+ * Handle returned by MmSecureVirtualMemory.
+ *
+ * @return
+ * None.
+ **/
 VOID
 NTAPI
 MmUnsecureVirtualMemory(IN PVOID SecureMem)
 {
-    static ULONG Warn; if (!Warn++) UNIMPLEMENTED;
+    PMI_SECURE_CONTEXT SecureContext = (PMI_SECURE_CONTEXT)SecureMem;
+    PMMSUPPORT AddressSpace;
+    ULONG i;
+
+    if (!SecureContext) return;
+
+    AddressSpace = MmGetCurrentAddressSpace();
+    MmLockAddressSpace(AddressSpace);
+
+    for (i = 0; i < SecureContext->VadCount; i++)
+    {
+        MiRemoveSecureVad(SecureContext->SecureEntries[i]);
+    }
+
+    MmUnlockAddressSpace(AddressSpace);
+
+    ExFreePoolWithTag(SecureContext, 'CSaV');
 }
 
 /* SYSTEM CALLS ***************************************************************/
