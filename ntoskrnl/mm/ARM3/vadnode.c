@@ -919,6 +919,20 @@ MiInsertSecureVad(_In_ PMMVAD Vad,
 
     if (!Vad->u2.VadFlags2.LongVad) return STATUS_INVALID_PARAMETER;
 
+    /* Only "normal" VADs can be secured.
+     * Excluded: AWE, physical memory, rotate and large pages */
+    switch (Vad->u.VadFlags.VadType)
+    {
+        case VadNone:
+        case VadImageMap:
+        case VadWriteWatch:
+            break;
+
+        default:
+            DPRINT1("Cannot secure this VAD type\n");
+            return STATUS_INVALID_PAGE_PROTECTION;
+    }
+
     Entry = ExAllocatePoolWithTag(NonPagedPool, sizeof(MI_VAD_SECURE_ENTRY), 'eSaV');
     if (!Entry) return STATUS_INSUFFICIENT_RESOURCES;
 
