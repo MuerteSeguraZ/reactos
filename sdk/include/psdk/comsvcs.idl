@@ -1,0 +1,1911 @@
+/*
+ * PROJECT:     ReactOS PSDK
+ * LICENSE:     MIT (https://spdx.org/licenses/MIT)
+ * PURPOSE:     COM+ services interfaces
+ * COPYRIGHT:   Copyright 2026 Alex Mendoza <05alex.mendozaa@gmail.com>
+ */
+
+import "unknwn.idl";
+import "oaidl.idl";
+import "objidl.idl";
+import "transact.idl";
+import "comadmin.idl";
+
+interface ISecurityCertificateColl;
+interface ISecurityIdentityColl;
+interface ISecurityCallersColl;
+interface ISecurityCallContext;
+interface IGetSecurityCallContext;
+interface IContextState;
+interface IObjectContext;
+interface IObjectContextActivity;
+interface IObjectContextInfo;
+interface IObjectConstruct;
+interface IObjectConstructString;
+interface IObjectControl;
+interface IObjectContextTip;
+interface IPlaybackControl;
+interface ISecurityProperty;
+interface ICrmCompensator;
+interface ICrmLogControl;
+interface ICrmCompensatorVariants;
+interface ICrmFormatLogRecords;
+interface IServiceCall;
+interface IServiceActivity;
+interface ITransactionStatus;
+interface ICheckSxsConfig;
+interface IAsyncErrorNotify;
+interface IProcessInitializer;
+interface IManagedObjectInfo;
+interface IManagedPooledObj;
+interface ContextInfo;
+interface ContextInfo2;
+interface ObjectControl;
+interface IMTxAS;
+interface ObjectContext;
+interface SecurityProperty;
+interface ITransactionContext;
+interface ITransactionContextEx;
+interface ICreateWithTipTransactionEx;
+interface ICreateWithTransactionEx;
+interface IServiceInheritanceConfig;
+interface IServiceThreadPoolConfig;
+interface IServiceTransactionConfig;
+interface IServiceTransactionConfigBase;
+interface IServiceSynchronizationConfig;
+interface IServiceIISIntrinsicsConfig;
+interface IServiceComTIIntrinsicsConfig;
+interface IServiceTrackerConfig;
+interface IServiceSxsConfig;
+interface IServicePartitionConfig;
+interface IServicePool;
+interface IServicePoolConfig;
+interface ISharedProperty;
+interface ISharedPropertyGroup;
+interface ISharedPropertyGroupManager;
+interface IMtsEvents;
+interface IMtsEventInfo;
+interface IMTSLocator;
+interface IMtsGrp;
+interface IComThreadEvents;
+interface IComUserEvent;
+interface IComAppEvents;
+interface IComInstanceEvents;
+interface IComTransactionEvents;
+interface IComMethodEvents;
+interface IComObjectEvents;
+interface IComResourceEvents;
+interface IComSecurityEvents;
+interface IComObjectPoolEvents;
+interface IComObjectPoolEvents2;
+interface IComObjectConstructionEvents;
+interface IComActivityEvents;
+interface IComIdentityEvents;
+interface IComQCEvents;
+interface IComExceptionEvents;
+interface IComCRMEvents;
+interface IComMethod2Events;
+interface IComTrackingInfoEvents;
+interface IComApp2Events;
+interface IComTransaction2Events;
+interface IComInstance2Events;
+interface IComObjectPool2Events;
+interface IComObjectConstruction2Events;
+interface IComLTxEvents;
+interface ISystemAppEventData;
+interface ICrmMonitorLogRecords;
+interface ICrmMonitor;
+interface ICrmMonitorClerks;
+interface IMessageMover;
+interface IDispenserManager;
+interface IDispenserDriver;
+interface IHolder;
+interface IDispenserManagerShutdownGuarantee;
+interface IPoolManager;
+interface IEventServerTrace;
+interface IEventServer;
+interface IEventServer2;
+interface IReceiveAppData;
+interface IGetAppData;
+interface IProcessDump;
+interface IAppDomainHelper;
+interface IAssemblyLocator;
+
+
+typedef ULONG_PTR RESTYPID;
+typedef ULONG_PTR RESID;
+typedef LPOLESTR SRESID;
+typedef LPCOLESTR constSRESID;
+typedef DWORD RESOURCERATING;
+typedef LONG TIMEINSECS;
+typedef ULONG_PTR INSTID;
+typedef ULONG_PTR TRANSID;
+
+typedef struct
+{
+    DWORD cbSize;
+    DWORD dwPid;
+    LONGLONG lTime;
+    LONG lMicroTime;
+    LONGLONG perfCount;
+    GUID guidApp;
+    LPOLESTR sMachineName;
+} COMSVCSEVENTINFO;
+
+typedef enum tagTransactionVote
+{
+    TxCommit = 0,
+    TxAbort = TxCommit + 1
+} TransactionVote;
+
+typedef struct tagCrmLogRecordRead
+{
+    DWORD dwCrmFlags;
+    DWORD dwSequenceNumber;
+    BLOB blobUserData;
+} CrmLogRecordRead;
+
+typedef enum tagCrmTransactionState
+{
+    TxState_Active = 0,
+    TxState_Committed,
+    TxState_Aborted,
+    TxState_Indoubt
+} CrmTransactionState;
+
+typedef enum tagCSC_InheritanceConfig
+{
+    CSC_Inherit = 0,
+    CSC_Ignore = CSC_Inherit + 1
+} CSC_InheritanceConfig;
+
+typedef enum tagCSC_ThreadPool
+{
+    CSC_ThreadPoolNone = 0,
+    CSC_ThreadPoolInherit,
+    CSC_STAThreadPool,
+    CSC_MTAThreadPool
+} CSC_ThreadPool;
+
+typedef enum tagCSC_Binding
+{
+    CSC_NoBinding = 0,
+    CSC_BindToPoolThread = CSC_NoBinding + 1
+} CSC_Binding;
+
+typedef enum tagCSC_TransactionConfig
+{
+    CSC_NoTransaction = 0,
+    CSC_IfContainerIsTransactional,
+    CSC_CreateTransactionIfNecessary,
+    CSC_NewTransaction
+} CSC_TransactionConfig;
+
+typedef enum tagCSC_SynchronizationConfig
+{
+    CSC_NoSynchronization = 0,
+    CSC_IfContainerIsSynchronized,
+    CSC_NewSynchronizationIfNecessary,
+    CSC_NewSynchronization
+} CSC_SynchronizationConfig;
+
+typedef enum tagCSC_TrackerConfig
+{
+    CSC_DontUseTracker = 0,
+    CSC_UseTracker = CSC_DontUseTracker + 1
+} CSC_TrackerConfig;
+
+typedef enum tagCSC_PartitionConfig
+{
+    CSC_NoPartition = 0,
+    CSC_InheritPartition,
+    CSC_NewPartition
+} CSC_PartitionConfig;
+
+typedef enum tagCSC_IISIntrinsicsConfig
+{
+    CSC_NoIISIntrinsics = 0,
+    CSC_InheritIISIntrinsics = CSC_NoIISIntrinsics + 1
+} CSC_IISIntrinsicsConfig;
+
+typedef enum tagCSC_COMTIIntrinsicsConfig
+{
+    CSC_NoCOMTIIntrinsics = 0,
+    CSC_InheritCOMTIIntrinsics = CSC_NoCOMTIIntrinsics + 1
+} CSC_COMTIIntrinsicsConfig;
+
+typedef enum tagCSC_SxsConfig
+{
+    CSC_NoSxs = 0,
+    CSC_InheritSxs,
+    CSC_NewSxs
+} CSC_SxsConfig;
+
+typedef enum tagCOMPLUS_APPTYPE
+{
+    APPTYPE_UNKNOWN = 0xffffffff,
+    APPTYPE_SERVER = 1,
+    APPTYPE_LIBRARY = 0,
+    APPTYPE_SWC = 2
+} COMPLUS_APPTYPE;
+
+typedef struct _RECYCLE_INFO
+{
+    GUID guidCombaseProcessIdentifier;
+    LONGLONG ProcessStartTime;
+    DWORD dwRecycleLifetimeLimit;
+    DWORD dwRecycleMemoryLimit;
+    DWORD dwRecycleExpirationTimeout;
+} RECYCLE_INFO;
+
+typedef struct CAppStatistics
+{
+    DWORD m_cTotalCalls;
+    DWORD m_cTotalInstances;
+    DWORD m_cTotalClasses;
+    DWORD m_cCallsPerSecond;
+} APPSTATISTICS;
+
+typedef struct CAppData
+{
+    DWORD m_idApp;
+    WCHAR m_szAppGuid[40];
+    DWORD m_dwAppProcessId;
+    APPSTATISTICS m_AppStatistics;
+} appData;
+
+cpp_quote("typedef appData APPDATA;")
+
+typedef struct CCLSIDData
+{
+    CLSID m_clsid;
+    DWORD m_cReferences;
+    DWORD m_cBound;
+    DWORD m_cPooled;
+    DWORD m_cInCall;
+    DWORD m_dwRespTime;
+    DWORD m_cCallsCompleted;
+    DWORD m_cCallsFailed;
+} CLSIDDATA;
+
+typedef struct CCLSIDData2
+{
+    CLSID m_clsid;
+    GUID m_appid;
+    GUID m_partid;
+    [string] WCHAR *m_pwszAppName;
+    [string] WCHAR *m_pwszCtxName;
+    COMPLUS_APPTYPE m_eAppType;
+    DWORD m_cReferences;
+    DWORD m_cBound;
+    DWORD m_cPooled;
+    DWORD m_cInCall;
+    DWORD m_dwRespTime;
+    DWORD m_cCallsCompleted;
+    DWORD m_cCallsFailed;
+} CLSIDDATA2;
+
+typedef enum
+{
+    TRKCOLL_PROCESSES = 0,
+    TRKCOLL_APPLICATIONS,
+    TRKCOLL_COMPONENTS
+} TRACKING_COLL_TYPE;
+
+typedef enum
+{
+    mtsErrCtxAborted = 0x8004e002,
+    mtsErrCtxAborting = 0x8004e003,
+    mtsErrCtxNoContext = 0x8004e004,
+    mtsErrCtxNotRegistered = 0x8004e005,
+    mtsErrCtxSynchTimeout = 0x8004e006,
+    mtsErrCtxOldReference = 0x8004e007,
+    mtsErrCtxRoleNotFound = 0x8004e00c,
+    mtsErrCtxNoSecurity = 0x8004e00d,
+    mtsErrCtxWrongThread = 0x8004e00e,
+    mtsErrCtxTMNotAvailable = 0x8004e00f,
+    comQCErrApplicationNotQueued = 0x80110600,
+    comQCErrNoQueueableInterfaces = 0x80110601,
+    comQCErrQueuingServiceNotAvailable = 0x80110602,
+    comQCErrQueueTransactMismatch = 0x80110603,
+    comqcErrRecorderMarshalled = 0x80110604,
+    comqcErrOutParam = 0x80110605,
+    comqcErrRecorderNotTrusted = 0x80110606,
+    comqcErrPSLoad = 0x80110607,
+    comqcErrMarshaledObjSameTxn = 0x80110608,
+    comqcErrInvalidMessage = 0x80110650,
+    comqcErrMsmqSidUnavailable = 0x80110651,
+    comqcErrWrongMsgExtension = 0x80110652,
+    comqcErrMsmqServiceUnavailable = 0x80110653,
+    comqcErrMsgNotAuthenticated = 0x80110654,
+    comqcErrMsmqConnectorUsed = 0x80110655,
+    comqcErrBadMarshaledObject = 0x80110656
+} Error_Constants;
+
+typedef enum
+{
+    LockSetGet = 0,
+    LockMethod = LockSetGet + 1
+} LockModes;
+
+typedef enum
+{
+    Standard = 0,
+    Process = Standard + 1
+} ReleaseModes;
+
+typedef enum tagCRMFLAGS
+{
+    CRMFLAG_FORGETTARGET = 0x1,
+    CRMFLAG_WRITTENDURINGPREPARE = 0x2,
+    CRMFLAG_WRITTENDURINGCOMMIT = 0x4,
+    CRMFLAG_WRITTENDURINGABORT = 0x8,
+    CRMFLAG_WRITTENDURINGRECOVERY = 0x10,
+    CRMFLAG_WRITTENDURINGREPLAY = 0x20,
+    CRMFLAG_REPLAYINPROGRESS = 0x40
+} CRMFLAGS;
+
+typedef enum tagCRMREGFLAGS
+{
+    CRMREGFLAG_PREPAREPHASE = 0x1,
+    CRMREGFLAG_COMMITPHASE = 0x2,
+    CRMREGFLAG_ABORTPHASE = 0x4,
+    CRMREGFLAG_ALLPHASES = 0x7,
+    CRMREGFLAG_FAILIFINDOUBTSREMAIN = 0x10
+} CRMREGFLAGS;
+
+cpp_quote("#define TRACKER_STARTSTOP_EVENT L\"Global\\\\COM+ Tracker Push Event\"")
+cpp_quote("#define TRACKER_INIT_EVENT L\"Global\\\\COM+ Tracker Init Event\"")
+cpp_quote("#ifndef GUID_STRING_SIZE")
+cpp_quote("#define GUID_STRING_SIZE 40")
+cpp_quote("#endif")
+cpp_quote("#define MTXDM_E_ENLISTRESOURCEFAILED 0x8004E100")
+cpp_quote("#define CRR_NO_REASON_SUPPLIED 0x00000000")
+cpp_quote("#define CRR_LIFETIME_LIMIT 0xFFFFFFFF")
+cpp_quote("#define CRR_ACTIVATION_LIMIT 0xFFFFFFFE")
+cpp_quote("#define CRR_CALL_LIMIT 0xFFFFFFFD")
+cpp_quote("#define CRR_MEMORY_LIMIT 0xFFFFFFFC")
+cpp_quote("#define CRR_RECYCLED_FROM_UI 0xFFFFFFFB")
+
+[
+    object,
+    uuid(CAFC823B-B441-11D1-B82B-0000F8757E2A),
+    dual,
+    pointer_default(unique)
+]
+interface ISecurityCertificateColl : IDispatch
+{
+    [propget, id(0x60020000)] HRESULT Count([out, retval] LONG *pRetVal);
+    [propget, id(DISPID_VALUE)] HRESULT Item([in] BSTR name, [out, retval] VARIANT *pRetVal);
+    [propget, restricted, id(DISPID_NEWENUM)] HRESULT _NewEnum([out, retval] IUnknown **pRetVal);
+}
+
+[
+    object,
+    uuid(CAFC823C-B441-11D1-B82B-0000F8757E2A),
+    dual,
+    pointer_default(unique)
+]
+interface ISecurityIdentityColl : IDispatch
+{
+    [propget, id(0x60020000)] HRESULT Count([out, retval] LONG *pRetVal);
+    [propget, id(DISPID_VALUE)] HRESULT Item([in] BSTR name, [out, retval] VARIANT *pRetVal);
+    [propget, restricted, id(DISPID_NEWENUM)] HRESULT _NewEnum([out, retval] IUnknown **pRetVal);
+}
+
+[
+    object,
+    uuid(CAFC823D-B441-11D1-B82B-0000F8757E2A),
+    dual,
+    pointer_default(unique)
+]
+interface ISecurityCallersColl : IDispatch
+{
+    [propget, id(0x60020000)] HRESULT Count([out, retval] LONG *pRetVal);
+    [propget, id(DISPID_VALUE)] HRESULT Item([in] LONG lIndex, [out, retval] ISecurityIdentityColl **pRetVal);
+    [propget, restricted, id(DISPID_NEWENUM)] HRESULT _NewEnum([out, retval] IUnknown **pRetVal);
+}
+
+[
+    object,
+    uuid(CAFC823E-B441-11D1-B82B-0000F8757E2A),
+    dual,
+    pointer_default(unique)
+]
+interface ISecurityCallContext : IDispatch
+{
+    [propget, id(0x60020005)] HRESULT Count([out, retval] LONG *pRetVal);
+    [propget, id(DISPID_VALUE)] HRESULT Item([in] BSTR name, [out, retval] VARIANT *pRetVal);
+    [propget, restricted, id(DISPID_NEWENUM)] HRESULT _NewEnum([out, retval] IUnknown **pRetVal);
+    [id(0x60020006)] HRESULT IsCallerInRole([in] BSTR bstrRole, [out, retval] VARIANT_BOOL *pRetVal);
+    [id(0x60020007)] HRESULT IsSecurityEnabled([out, retval] VARIANT_BOOL *pRetVal);
+    [id(0x60020008)] HRESULT IsUserInRole([in] VARIANT *pUser, [in] BSTR bstrRole, [out, retval] VARIANT_BOOL *pRetVal);
+}
+
+[
+    object,
+    uuid(CAFC823F-B441-11D1-B82B-0000F8757E2A),
+    dual,
+    pointer_default(unique)
+]
+interface IGetSecurityCallContext : IDispatch
+{
+    [id(0x60020000)] HRESULT GetSecurityCallContext([out, retval] ISecurityCallContext **pRetVal);
+}
+
+[
+    object,
+    uuid(3C05E54B-A42A-11D2-AFC4-00C04F8EE1C4),
+    pointer_default(unique)
+]
+interface IContextState : IUnknown
+{
+    HRESULT SetDeactivateOnReturn([in] VARIANT_BOOL bDeactivate);
+    HRESULT GetDeactivateOnReturn([out] VARIANT_BOOL *pbDeactivate);
+    HRESULT SetMyTransactionVote([in] TransactionVote txVote);
+    HRESULT GetMyTransactionVote([out] TransactionVote *ptxVote);
+}
+
+[
+    object,
+    uuid(51372AE0-CAE7-11CF-BE81-00AA00A2FA25),
+    pointer_default(unique)
+]
+interface IObjectContext : IUnknown
+{
+    HRESULT CreateInstance([in] REFCLSID rclsid, [in] REFIID riid, [out, retval, iid_is(riid)] void **ppv);
+    HRESULT SetComplete();
+    HRESULT SetAbort();
+    HRESULT EnableCommit();
+    HRESULT DisableCommit();
+    BOOL IsInTransaction();
+    BOOL IsSecurityEnabled();
+    HRESULT IsCallerInRole([in] BSTR bstrRole, [out, retval] BOOL *pfIsInRole);
+}
+
+[
+    object,
+    uuid(51372AFC-CAE7-11CF-BE81-00AA00A2FA25),
+    pointer_default(unique)
+]
+interface IObjectContextActivity : IUnknown
+{
+    HRESULT GetActivityId([out] GUID *pGUID);
+}
+
+[
+    object,
+    uuid(75B52DDB-E8ED-11D1-93AD-00AA00BA3258),
+    pointer_default(unique)
+]
+interface IObjectContextInfo : IUnknown
+{
+    BOOL IsInTransaction();
+    HRESULT GetTransaction([in] IUnknown **pptrans);
+    HRESULT GetTransactionId([out] GUID *pGUID);
+    HRESULT GetActivityId([out] GUID *pGUID);
+    HRESULT GetContextId([out] GUID *pGUID);
+}
+
+[
+    object,
+    uuid(41C4F8B3-7439-11D2-98CB-00C04F8EE1C4),
+    pointer_default(unique)
+]
+interface IObjectConstruct : IUnknown
+{
+    HRESULT Construct([in] IDispatch *pCtorObj);
+}
+
+[
+    object,
+    uuid(41C4F8B2-7439-11D2-98CB-00C04F8EE1C4),
+    dual,
+    pointer_default(unique)
+]
+interface IObjectConstructString : IDispatch
+{
+    [propget, id(0x1)] HRESULT ConstructString([out, retval] BSTR *pRetVal);
+}
+
+[
+    object,
+    uuid(51372AEC-CAE7-11CF-BE81-00AA00A2FA25),
+    pointer_default(unique)
+]
+interface IObjectControl : IUnknown
+{
+    HRESULT Activate();
+    void Deactivate();
+    BOOL CanBePooled();
+}
+
+[
+    object,
+    uuid(92FD41CA-BAD9-11D2-9A2D-00C04F797BC9),
+    pointer_default(unique)
+]
+interface IObjectContextTip : IUnknown
+{
+    HRESULT GetTipUrl([out, retval] BSTR *pTipUrl);
+}
+
+[
+    object,
+    uuid(51372AFD-CAE7-11CF-BE81-00AA00A2FA25),
+    pointer_default(unique)
+]
+interface IPlaybackControl : IUnknown
+{
+    HRESULT FinalClientRetry();
+    HRESULT FinalServerRetry();
+}
+
+[
+    object,
+    uuid(51372AEA-CAE7-11CF-BE81-00AA00A2FA25),
+    pointer_default(unique)
+]
+interface ISecurityProperty : IUnknown
+{
+    [local] HRESULT GetDirectCreatorSID([out] PSID *pSID);
+    [local] HRESULT GetOriginalCreatorSID([out] PSID *pSID);
+    [local] HRESULT GetDirectCallerSID([out] PSID *pSID);
+    [local] HRESULT GetOriginalCallerSID([out] PSID *pSID);
+    [local] HRESULT ReleaseSID([in] PSID pSID);
+}
+
+[
+    object,
+    uuid(BBC01830-8D3B-11D1-82EC-00A0C91EEDE9),
+    pointer_default(unique)
+]
+interface ICrmCompensator : IUnknown
+{
+    HRESULT SetLogControl([in] ICrmLogControl *pLogControl);
+    HRESULT BeginPrepare();
+    HRESULT PrepareRecord([in] CrmLogRecordRead crmLogRec, [out, retval] BOOL *pfForget);
+    HRESULT EndPrepare([out, retval] BOOL *pfOkToPrepare);
+    HRESULT BeginCommit([in] BOOL fRecovery);
+    HRESULT CommitRecord([in] CrmLogRecordRead crmLogRec, [out, retval] BOOL *pfForget);
+    HRESULT EndCommit();
+    HRESULT BeginAbort([in] BOOL fRecovery);
+    HRESULT AbortRecord([in] CrmLogRecordRead crmLogRec, [out, retval] BOOL *pfForget);
+    HRESULT EndAbort();
+}
+
+[
+    object,
+    uuid(A0E174B3-D26E-11D2-8F84-00805FC7BCD9),
+    pointer_default(unique)
+]
+interface ICrmLogControl : IUnknown
+{
+    [propget] HRESULT TransactionUOW([out, retval] BSTR *pVal);
+    HRESULT RegisterCompensator([in] LPCWSTR lpcwstrProgIdCompensator, [in] LPCWSTR lpcwstrDescription, [in] LONG lCrmRegFlags);
+    HRESULT WriteLogRecordVariants([in] VARIANT *pLogRecord);
+    HRESULT ForceLog();
+    HRESULT ForgetLogRecord();
+    HRESULT ForceTransactionToAbort();
+    HRESULT WriteLogRecord([in, size_is(cBlob)] BLOB rgBlob[], [in] DWORD cBlob);
+}
+
+[
+    object,
+    uuid(F0BAF8E4-7804-11D1-82E9-00A0C91EEDE9),
+    pointer_default(unique)
+]
+interface ICrmCompensatorVariants : IUnknown
+{
+    HRESULT SetLogControlVariants([in] ICrmLogControl *pLogControl);
+    HRESULT BeginPrepareVariants();
+    HRESULT PrepareRecordVariants([in] VARIANT *pLogRecord, [out, retval] VARIANT_BOOL *pbForget);
+    HRESULT EndPrepareVariants([out, retval] VARIANT_BOOL *pbOkToPrepare);
+    HRESULT BeginCommitVariants([in] VARIANT_BOOL bRecovery);
+    HRESULT CommitRecordVariants([in] VARIANT *pLogRecord, [out, retval] VARIANT_BOOL *pbForget);
+    HRESULT EndCommitVariants();
+    HRESULT BeginAbortVariants([in] VARIANT_BOOL bRecovery);
+    HRESULT AbortRecordVariants([in] VARIANT *pLogRecord, [out, retval] VARIANT_BOOL *pbForget);
+    HRESULT EndAbortVariants();
+}
+
+[
+    object,
+    uuid(9C51D821-C98B-11D1-82FB-00A0C91EEDE9),
+    pointer_default(unique)
+]
+interface ICrmFormatLogRecords : IUnknown
+{
+    HRESULT GetColumnCount([out] LONG *plColumnCount);
+    HRESULT GetColumnHeaders([out] VARIANT *pHeaders);
+    HRESULT GetColumn([in] CrmLogRecordRead crmLogRec, [out] VARIANT *pFormattedLogRecord);
+    HRESULT GetColumnVariants([in] VARIANT LogRecord, [out] VARIANT *pFormattedLogRecord);
+}
+
+[
+    object,
+    uuid(BD3E2E12-42DD-40F4-A09A-95A50C58304B),
+    pointer_default(unique)
+]
+interface IServiceCall : IUnknown
+{
+    HRESULT OnCall();
+}
+
+[
+    object,
+    uuid(67532E0C-9E2F-4450-A354-035633944E17),
+    pointer_default(unique)
+]
+interface IServiceActivity : IUnknown
+{
+    HRESULT SynchronousCall([in] IServiceCall *pIServiceCall);
+    HRESULT AsynchronousCall([in] IServiceCall *pIServiceCall);
+    HRESULT BindToCurrentThread();
+    HRESULT UnbindFromThread();
+}
+
+[
+    object,
+    uuid(61F589E8-3724-4898-A0A4-664AE9E1D1B4),
+    pointer_default(unique)
+]
+interface ITransactionStatus : IUnknown
+{
+    HRESULT SetTransactionStatus([in] HRESULT hrStatus);
+    HRESULT GetTransactionStatus([out] HRESULT *pHrStatus);
+}
+
+[
+    object,
+    uuid(0FF5A96F-11FC-47D1-BAA6-25DD347E7242),
+    pointer_default(unique)
+]
+interface ICheckSxsConfig : IUnknown
+{
+    HRESULT IsSameSxsConfig([in] LPCWSTR wszSxsName, [in] LPCWSTR wszSxsDirectory, [in] LPCWSTR wszSxsAppName);
+}
+
+[
+    object,
+    uuid(FE6777FB-A674-4177-8F32-6D707E113484),
+    pointer_default(unique)
+]
+interface IAsyncErrorNotify : IUnknown
+{
+    HRESULT OnError([in] HRESULT hr);
+}
+
+[
+    object,
+    uuid(1113F52D-DC7F-4943-AED6-88D04027E32A),
+    oleautomation,
+    pointer_default(unique)
+]
+interface IProcessInitializer : IUnknown
+{
+    HRESULT Startup([in] IUnknown *punkProcessControl);
+    HRESULT Shutdown();
+}
+
+[
+    object,
+    uuid(1427C51A-4584-49D8-90A0-C50D8086CBE9),
+    pointer_default(unique)
+]
+interface IManagedObjectInfo : IUnknown
+{
+    HRESULT GetIUnknown([out] IUnknown **pUnk);
+    HRESULT GetIObjectControl([out] IObjectControl **pCtrl);
+    HRESULT SetInPool([in] BOOL bInPool, [in] IManagedPooledObj *pPooledObj);
+    HRESULT SetWrapperStrength([in] BOOL bStrong);
+}
+
+[
+    object,
+    uuid(C5DA4BEA-1B42-4437-8926-B6A38860A770),
+    pointer_default(unique)
+]
+interface IManagedPooledObj : IUnknown
+{
+    HRESULT SetHeld([in] BOOL m_bHeld);
+}
+
+[
+    object,
+    uuid(19A5A02C-0AC8-11D2-B286-00C04F8EF934),
+    dual,
+    pointer_default(unique)
+]
+interface ContextInfo : IDispatch
+{
+    [id(0x6002000)] HRESULT IsInTransaction([out, retval] VARIANT_BOOL *pRetVal);
+    [id(0x60020003)] HRESULT GetTransaction([out, retval] IUnknown **pRetVal);
+    [id(0x60020004)] HRESULT GetTransactionId([out, retval] BSTR *pRetVal);
+    [id(0x60020005)] HRESULT GetActivityId([out, retval] BSTR *pRetVal);
+    [id(0x60020006)] HRESULT GetContextId([out, retval] BSTR *pRetVal);
+}
+
+[
+    object,
+    uuid(C99D6E75-2375-11D4-8331-00C04F605588),
+    dual,
+    pointer_default(unique)
+]
+interface ContextInfo2 : ContextInfo
+{
+    [id(0x60020007)] HRESULT GetPartitionId([out, retval] BSTR *pRetVal);
+    [id(0x60020008)] HRESULT GetApplicationId([out, retval] BSTR *pRetVal);
+    [id(0x60020009)] HRESULT GetApplicationInstanceId([out, retval] BSTR *pRetVal);
+}
+
+[
+    object,
+    uuid(7DC41850-0C31-11D0-8B79-00AA00B8A790),
+    oleautomation,
+    pointer_default(unique)
+]
+interface ObjectControl : IUnknown
+{
+    HRESULT Activate();
+    HRESULT Deactivate();
+    HRESULT CanBePooled([out, retval] VARIANT_BOOL *pbPoolable);
+}
+
+[
+    object,
+    uuid(74C08641-CEDB-11CF-8B49-00AA00B8A790),
+    dual,
+    pointer_default(unique)
+]
+interface IMTxAS : IDispatch
+{
+    [id(0x60020000)] HRESULT GetObjectContext([out, retval] ObjectContext **pRetVal);
+    [id(0x60020001)] HRESULT SafeRef([in] VARIANT vRefIn, [out, retval] VARIANT *pRetVal);
+    [id(0x60020002)] HRESULT RecycleSurrogate([in] LONG lReasonCode);
+}
+
+[
+    object,
+    uuid(74C08646-CEDB-11CF-8B49-00AA00B8A790),
+    dual,
+    pointer_default(unique)
+]
+interface ObjectContext : IDispatch
+{
+    [id(0x60020000)] HRESULT CreateInstance([in] BSTR bstrProgID, [out, retval] VARIANT *pRetVal);
+    [id(0x60020001)] HRESULT SetComplete();
+    [id(0x60020002)] HRESULT SetAbort();
+    [id(0x60020003)] HRESULT EnableCommit();
+    [id(0x60020004)] HRESULT DisableCommit();
+    [id(0x60020005)] HRESULT IsInTransaction([out, retval] VARIANT_BOOL *pRetVal);
+    [id(0x60020006)] HRESULT IsSecurityEnabled([out, retval] VARIANT_BOOL *pRetVal);
+    [id(0x60020007)] HRESULT IsCallerInRole([in] BSTR bstrRole, [out, retval] VARIANT_BOOL *pRetVal);
+    [propget, id(0x60020020)] HRESULT Count([out, retval] LONG *pRetVal);
+    [propget, id(DISPID_VALUE)] HRESULT Item([in] BSTR name, [out, retval] VARIANT *pRetVal);
+    [propget, restricted, id(DISPID_NEWENUM)] HRESULT _NewEnum([out, retval] IUnknown **pRetVal);
+    [propget, id(0x60020023)] HRESULT Security([out, retval] SecurityProperty **pRetVal);
+    [propget, id(0x60020024)] HRESULT ContextInfo([out, retval] ContextInfo **pRetVal);
+}
+
+[
+    object,
+    uuid(E74A7215-014D-11D1-A63C-00A0C911B4E0),
+    dual,
+    pointer_default(unique)
+]
+interface SecurityProperty : IDispatch
+{
+    [id(0x60020000)] HRESULT GetDirectCallerName([out, retval] BSTR *pRetVal);
+    [id(0x60020001)] HRESULT GetDirectCreatorName([out, retval] BSTR *pRetVal);
+    [id(0x60020002)] HRESULT GetOriginalCallerName([out, retval] BSTR *pRetVal);
+    [id(0x60020003)] HRESULT GetOriginalCreatorName([out, retval] BSTR *pRetVal);
+}
+
+[
+    object,
+    uuid(7999FC21-D3C6-11CF-ACAB-00A024A55AEF),
+    dual,
+    pointer_default(unique)
+]
+interface ITransactionContext : IDispatch
+{
+    [id(DISPID_VALUE)] HRESULT CreateInstance([in] BSTR pszProgId, [out, retval] VARIANT *pRetVal);
+    [id(0x1)] HRESULT Commit();
+    [id(0x2)] HRESULT Abort();
+}
+
+[
+    object,
+    uuid(7999FC22-D3C6-11CF-ACAB-00A024A55AEF),
+    pointer_default(unique)
+]
+interface ITransactionContextEx : IUnknown
+{
+    HRESULT CreateInstance([in] REFCLSID rclsid, [in] REFIID riid, [out, retval, iid_is(riid)] void **pObject);
+    HRESULT Commit();
+    HRESULT Abort();
+}
+
+[
+    object,
+    uuid(455ACF59-5345-11D2-99CF-00C04F797BC9),
+    pointer_default(unique)
+]
+interface ICreateWithTipTransactionEx : IUnknown
+{
+    HRESULT CreateInstance([in] BSTR bstrTipUrl, [in] REFCLSID rclsid, [in] REFIID riid, [out, retval, iid_is(riid)] void **pObject);
+}
+
+[
+    object,
+    uuid(455ACF57-5345-11D2-99CF-00C04F797BC9),
+    pointer_default(unique)
+]
+interface ICreateWithTransactionEx : IUnknown
+{
+    HRESULT CreateInstance([in] ITransaction *pTransaction, [in] REFCLSID rclsid, [in] REFIID riid, [out, retval, iid_is(riid)] void **pObject);
+}
+
+[
+    object,
+    uuid(92186771-D3B4-4D77-A8EA-EE842D586F35),
+    pointer_default(unique)
+]
+interface IServiceInheritanceConfig : IUnknown
+{
+    HRESULT ContainingContextTreatment([in] CSC_InheritanceConfig inheritanceConfig);
+}
+
+[
+    object,
+    uuid(186D89BC-F277-4BCC-80D5-4DF7B836EF4A),
+    pointer_default(unique)
+]
+interface IServiceThreadPoolConfig : IUnknown
+{
+    HRESULT SelectThreadPool([in] CSC_ThreadPool threadPool);
+    HRESULT SetBindingInfo([in] CSC_Binding binding);
+}
+
+[
+    object,
+    uuid(59F4C2A3-D3D7-4A31-B6E4-6AB3177C50B9),
+    pointer_default(unique)
+]
+interface IServiceTransactionConfig : IServiceTransactionConfigBase
+{
+    HRESULT ConfigureBYOT([in] ITransaction *pITxByot);
+}
+
+[
+    object,
+    uuid(772B3FBE-6FFD-42FB-B5F8-8F9B260F3810),
+    pointer_default(unique)
+]
+interface IServiceTransactionConfigBase : IUnknown
+{
+    HRESULT ConfigureTransaction([in] CSC_TransactionConfig transactionConfig);
+    HRESULT IsolationLevel([in] COMAdminTxIsolationLevelOptions option);
+    HRESULT TransactionTimeout([in] DWORD ulTimeoutSec);
+    HRESULT BringYourOwnTransaction([in] LPCWSTR szTipURL);
+    HRESULT NewTransactionDescription([in] LPCWSTR szTxDesc);
+}
+
+[
+    object,
+    uuid(FD880E81-6DCE-4C58-AF83-A208846C0030),
+    pointer_default(unique)
+]
+interface IServiceSynchronizationConfig : IUnknown
+{
+    HRESULT ConfigureSynchronization([in] CSC_SynchronizationConfig synchConfig);
+}
+
+[
+    object,
+    uuid(1A0CF920-D452-46F4-BC36-48118D54EA52),
+    pointer_default(unique)
+]
+interface IServiceIISIntrinsicsConfig : IUnknown
+{
+    HRESULT IISIntrinsicsConfig([in] CSC_IISIntrinsicsConfig IISIntrinsicsConfig);
+}
+
+[
+    object,
+    uuid(09E6831E-04E1-4ED4-9D0F-E8B168BAFEAF),
+    pointer_default(unique)
+]
+interface IServiceComTIIntrinsicsConfig : IUnknown
+{
+    HRESULT ComTIIntrinsicsConfig([in] CSC_COMTIIntrinsicsConfig ComTIIntrinsicsConfig);
+}
+
+[
+    object,
+    uuid(6C3A3E1D-0BA6-4036-B76F-D0404DB816C9),
+    pointer_default(unique)
+]
+interface IServiceTrackerConfig : IUnknown
+{
+    HRESULT TrackerConfig([in] CSC_TrackerConfig TrackerConfig, [in] LPCWSTR szTrackerAppName, [in] LPCWSTR szTrackerCtxName);
+}
+
+[
+    object,
+    uuid(C7CD7379-F3F2-4634-811B-703281D73E08),
+    pointer_default(unique)
+]
+interface IServiceSxsConfig : IUnknown
+{
+    HRESULT SxsConfig([in] CSC_SxsConfig scsConfig);
+    HRESULT SxsName([in] LPCWSTR szSxsName);
+    HRESULT SxsDirectory([in] LPCWSTR szSxsDirectory);
+}
+
+[
+    object,
+    uuid(80182D03-5EA4-4831-AE97-55BEFFC2E590),
+    pointer_default(unique)
+]
+interface IServicePartitionConfig : IUnknown
+{
+    HRESULT PartitionConfig([in] CSC_PartitionConfig PartitionConfig);
+    HRESULT PartitionID([in] REFGUID guidPartitionID);
+}
+
+[
+    object,
+    uuid(B302DF81-EA45-451E-99A2-09F9FD1B1E13),
+    pointer_default(unique)
+]
+interface IServicePool : IUnknown
+{
+    HRESULT Initialize([in] IUnknown *pPoolConfig);
+    HRESULT GetObject([in] REFIID riid, [out, iid_is(riid)] void **ppv);
+    HRESULT Shutdown();
+}
+
+[
+    object,
+    uuid(A9690656-5BCA-470C-8451-250C1F43A33E),
+    pointer_default(unique)
+]
+interface IServicePoolConfig : IUnknown
+{
+    [propput] HRESULT MaxPoolSize([in] DWORD dwMaxPool);
+    [propget] HRESULT MaxPoolSize([out, retval] DWORD *pdwMaxPool);
+    [propput] HRESULT MinPoolSize([in] DWORD dwMinPool);
+    [propget] HRESULT MinPoolSize([out, retval] DWORD *pdwMinPool);
+    [propput] HRESULT CreationTimeout([in] DWORD dwCreationTimeout);
+    [propget] HRESULT CreationTimeout([out, retval] DWORD *pdwCreationTimeout);
+    [propput] HRESULT TransactionAffinity([in] BOOL fTxAffinity);
+    [propget] HRESULT TransactionAffinity([out, retval] BOOL *pfTxAffinity);
+    [propput] HRESULT ClassFactory([in] IClassFactory *pFactory);
+    [propget] HRESULT ClassFactory([out, retval] IClassFactory **pFactory);
+}
+
+[
+    object,
+    uuid(2A005C01-A5DE-11CF-9E66-00AA00A3F464),
+    dual,
+    pointer_default(unique)
+]
+interface ISharedProperty : IDispatch
+{
+    [propget, id(DISPID_VALUE)] HRESULT Value([out, retval] VARIANT *pRetVal);
+    [propput, id(DISPID_VALUE)] HRESULT Value([in] VARIANT arg0);
+}
+
+[
+    object,
+    uuid(2A005C07-A5DE-11CF-9E66-00AA00A3F464),
+    dual,
+    pointer_default(unique)
+]
+interface ISharedPropertyGroup : IDispatch
+{
+    [id(0x1)] HRESULT CreatePropertyByPosition([in] int Index, [out] VARIANT_BOOL *fExists, [out, retval] ISharedProperty **pRetVal);
+    [propget, id(0x2)] HRESULT PropertyByPosition([in] int Index, [out, retval] ISharedProperty **pRetVal);
+    [id(0x3)] HRESULT CreateProperty([in] BSTR name, [out] VARIANT_BOOL *fExists, [out, retval] ISharedProperty **pRetVal);
+    [propget, id(0x4)] HRESULT Property([in] BSTR name, [out, retval] ISharedProperty **pRetVal);
+}
+
+[
+    object,
+    uuid(2A005C0D-A5DE-11CF-9E66-00AA00A3F464),
+    dual,
+    pointer_default(unique)
+]
+interface ISharedPropertyGroupManager : IDispatch
+{
+    [id(0x1)] HRESULT CreatePropertyGroup([in] BSTR name, [in, out] LONG *dwIsoMode, [in, out] LONG *dwRelMode, [out] VARIANT_BOOL *fExists, [out, retval] ISharedPropertyGroup **pRetVal);
+    [propget, id(0x2)] HRESULT Group([in] BSTR name, [out, retval] ISharedPropertyGroup **pRetVal);
+    [propget, restricted, id(DISPID_NEWENUM)] HRESULT _NewEnum([out, retval] IUnknown **pRetVal);
+}
+
+[
+    object,
+    uuid(BACEDF4D-74AB-11D0-B162-00AA00BA3258),
+    dual,
+    pointer_default(unique)
+]
+interface IMtsEvents : IDispatch
+{
+    [propget, id(0x1)] HRESULT PackageName([out, retval] BSTR *pRetVal);
+    [propget, id(0x2)] HRESULT PackageGuid([out, retval] BSTR *pRetVal);
+    [id(0x5)] HRESULT PostEvent([in] VARIANT *vEvent);
+    [propget, id(0x6)] HRESULT FireEvents([out, retval] VARIANT_BOOL *pRetVal);
+    [id(0x7)] HRESULT GetProcessID([out, retval] LONG *pRetVal);
+}
+
+[
+    object,
+    uuid(D56C3DC1-8482-11D0-B170-00AA00BA3258),
+    dual,
+    pointer_default(unique)
+]
+interface IMtsEventInfo : IDispatch
+{
+    [propget, id(0x60020000)] HRESULT Names([out, retval] IUnknown **pRetVal);
+    [propget, id(0x1)] HRESULT DisplayName([out, retval] BSTR *pRetVal);
+    [propget, id(0x60020002)] HRESULT EventID([out, retval] BSTR *pRetVal);
+    [propget, id(0x60020003)] HRESULT Count([out, retval] LONG *pRetVal);
+    [propget, id(0x60020004)] HRESULT Value([in] BSTR sKey, [out, retval] VARIANT *pRetVal);
+}
+
+[
+    object,
+    uuid(D19B8BFD-7F88-11D0-B16E-00AA00BA3258),
+    dual,
+    pointer_default(unique)
+]
+interface IMTSLocator : IDispatch
+{
+    [id(0x1)] HRESULT GetEventDispatcher([out, retval] IUnknown **pRetVal);
+}
+
+[
+    object,
+    uuid(4B2E958C-0393-11D1-B1AB-00AA00BA3258),
+    dual,
+    pointer_default(unique)
+]
+interface IMtsGrp : IDispatch
+{
+    [propget, id(0x1)] HRESULT Count([out, retval] LONG *pRetVal);
+    [id(0x2)] HRESULT Item([in] LONG lIndex, [out] IUnknown **ppUnkDispatcher);
+    [id(0x3)] HRESULT Refresh();
+}
+
+[
+    object,
+    uuid(683130A5-2E50-11D2-98A5-00C04F8EE1C4),
+    hidden,
+    pointer_default(unique)
+]
+interface IComThreadEvents : IUnknown
+{
+    HRESULT OnThreadStart([in] COMSVCSEVENTINFO *pinfo, [in] ULONG64 ThreadID, [in] DWORD dwThread, [in] DWORD dwTheadCnt);
+    HRESULT OnThreadTerminate([in] COMSVCSEVENTINFO *pinfo, [in] ULONG64 ThreadID, [in] DWORD dwThread, [in] DWORD dwTheadCnt);
+    HRESULT OnThreadBindToApartment([in] COMSVCSEVENTINFO *pinfo, [in] ULONG64 ThreadID, [in] ULONG64 AptID, [in] DWORD dwActCnt, [in] DWORD dwLowCnt);
+    HRESULT OnThreadUnBind([in] COMSVCSEVENTINFO *pinfo, [in] ULONG64 ThreadID, [in] ULONG64 AptID, [in] DWORD dwActCnt);
+    HRESULT OnThreadWorkEnque([in] COMSVCSEVENTINFO *pinfo, [in] ULONG64 ThreadID, [in] ULONG64 MsgWorkID, [in] DWORD QueueLen);
+    HRESULT OnThreadWorkPrivate([in] COMSVCSEVENTINFO *pinfo, [in] ULONG64 ThreadID, [in] ULONG64 MsgWorkID);
+    HRESULT OnThreadWorkPublic([in] COMSVCSEVENTINFO *pinfo, [in] ULONG64 ThreadID, [in] ULONG64 MsgWorkID, [in] DWORD QueueLen);
+    HRESULT OnThreadWorkRedirect([in] COMSVCSEVENTINFO *pinfo, [in] ULONG64 ThreadID, [in] ULONG64 MsgWorkID, [in] DWORD QueueLen, [in] ULONG64 ThreadNum);
+    HRESULT OnThreadWorkReject([in] COMSVCSEVENTINFO *pinfo, [in] ULONG64 ThreadID, [in] ULONG64 MsgWorkID, [in] DWORD QueueLen);
+    HRESULT OnThreadAssignApartment([in] COMSVCSEVENTINFO *pinfo, [in] REFGUID guidActivity, [in] ULONG64 AptID);
+    HRESULT OnThreadUnassignApartment([in] COMSVCSEVENTINFO *pinfo, [in] ULONG64 AptID);
+}
+
+[
+    object,
+    uuid(683130A4-2E50-11D2-98A5-00C04F8EE1C4),
+    hidden,
+    pointer_default(unique)
+]
+interface IComUserEvent : IUnknown
+{
+    HRESULT OnUserEvent([in] COMSVCSEVENTINFO *pinfo, [in] VARIANT *pvarEvent);
+}
+
+[
+    object,
+    uuid(683130A6-2E50-11D2-98A5-00C04F8EE1C4),
+    hidden,
+    pointer_default(unique)
+]
+interface IComAppEvents : IUnknown
+{
+    HRESULT OnAppActivation([in] COMSVCSEVENTINFO *pinfo, [in] GUID guidApp);
+    HRESULT OnAppShutdown([in] COMSVCSEVENTINFO *pinfo, [in] GUID guidApp);
+    HRESULT OnAppForceShutdown([in] COMSVCSEVENTINFO *pinfo, [in] GUID guidApp);
+}
+
+[
+    object,
+    uuid(683130A7-2E50-11D2-98A5-00C04F8EE1C4),
+    hidden,
+    pointer_default(unique)
+]
+interface IComInstanceEvents : IUnknown
+{
+    HRESULT OnObjectCreate([in] COMSVCSEVENTINFO *pinfo, [in] REFGUID guidActivity, [in] REFCLSID clsid, [in] REFGUID tsid, [in] ULONG64 CtxtID, [in] ULONG64 ObjectID);
+    HRESULT OnObjectDestroy([in] COMSVCSEVENTINFO *pinfo, [in] ULONG64 CtxtID);
+}
+
+[
+    object,
+    uuid(683130A8-2E50-11D2-98A5-00C04F8EE1C4),
+    hidden,
+    pointer_default(unique)
+]
+interface IComTransactionEvents : IUnknown
+{
+    HRESULT OnTransactionStart([in] COMSVCSEVENTINFO *pinfo, [in] REFGUID guidTx, [in] REFGUID tsid, [in] BOOL fRoot);
+    HRESULT OnTransactionPrepare([in] COMSVCSEVENTINFO *pinfo, [in] REFGUID guidTx, [in] BOOL fVoteYes);
+    HRESULT OnTransactionAbort([in] COMSVCSEVENTINFO *pinfo, [in] REFGUID guidTx);
+    HRESULT OnTransactionCommit([in] COMSVCSEVENTINFO *pinfo, [in] REFGUID guidTx);
+}
+
+[
+    object,
+    uuid(683130A9-2E50-11D2-98A5-00C04F8EE1C4),
+    hidden,
+    pointer_default(unique)
+]
+interface IComMethodEvents : IUnknown
+{
+    HRESULT OnMethodCall([in] COMSVCSEVENTINFO *pinfo, [in] ULONG64 oid, [in] REFCLSID guidCid, [in] REFIID guidRid, [in] DWORD iMeth);
+    HRESULT OnMethodReturn([in] COMSVCSEVENTINFO *pinfo, [in] ULONG64 oid, [in] REFCLSID guidCid, [in] REFIID guidRid, [in] DWORD iMeth, [in] HRESULT hresult);
+    HRESULT OnMethodException([in] COMSVCSEVENTINFO *pinfo, [in] ULONG64 oid, [in] REFCLSID guidCid, [in] REFIID guidRid, [in] DWORD iMeth);
+}
+
+[
+    object,
+    uuid(683130AA-2E50-11D2-98A5-00C04F8EE1C4),
+    pointer_default(unique)
+]
+interface IComObjectEvents : IUnknown
+{
+    HRESULT OnObjectActivate([in] COMSVCSEVENTINFO *pinfo, [in] ULONG64 CtxtID, [in] ULONG64 ObjectID);
+    HRESULT OnObjectDeactivate([in] COMSVCSEVENTINFO *pinfo, [in] ULONG64 CtxtID, [in] ULONG64 ObjectID);
+    HRESULT OnDisableCommit([in] COMSVCSEVENTINFO *pinfo, [in] ULONG64 CtxtID);
+    HRESULT OnEnableCommit([in] COMSVCSEVENTINFO *pinfo, [in] ULONG64 CtxtID);
+    HRESULT OnSetComplete([in] COMSVCSEVENTINFO *pinfo, [in] ULONG64 CtxtID);
+    HRESULT OnSetAbort([in] COMSVCSEVENTINFO *pinfo, [in] ULONG64 CtxtID);
+}
+
+[
+    object,
+    uuid(683130AB-2E50-11D2-98A5-00C04F8EE1C4),
+    hidden,
+    pointer_default(unique)
+]
+interface IComResourceEvents : IUnknown
+{
+    HRESULT OnResourceCreate([in] COMSVCSEVENTINFO *pinfo, [in] ULONG64 ObjectID, [in] LPCOLESTR pszType, [in] ULONG64 resId, [in] BOOL enlisted);
+    HRESULT OnResourceAllocate([in] COMSVCSEVENTINFO *pinfo, [in] ULONG64 ObjectID, [in] LPCOLESTR pszType, [in] ULONG64 resId, [in] BOOL enlisted, [in] DWORD NumRated, [in] DWORD Rating);
+    HRESULT OnResourceRecycle([in] COMSVCSEVENTINFO *pinfo, [in] ULONG64 ObjectID, [in] LPCOLESTR pszType, [in] ULONG64 resId);
+    HRESULT OnResourceDestroy([in] COMSVCSEVENTINFO *pinfo, [in] ULONG64 ObjectID, [in] HRESULT hr, [in] LPCOLESTR pszType, [in] ULONG64 resId);
+    HRESULT OnResourceTrack([in] COMSVCSEVENTINFO *pinfo, [in] ULONG64 ObjectID, [in] LPCOLESTR pszType, [in] ULONG64 resId, [in] BOOL enlisted);
+}
+
+[
+    object,
+    uuid(683130AC-2E50-11D2-98A5-00C04F8EE1C4),
+    hidden,
+    pointer_default(unique)
+]
+interface IComSecurityEvents : IUnknown
+{
+    HRESULT OnAuthenticate([in] COMSVCSEVENTINFO *pinfo, [in] REFGUID guidActivity, [in] ULONG64 ObjectID, [in] REFGUID guidIID, [in] DWORD iMeth, [in] DWORD cbByteOrig, [in, size_is(cbByteOrig)] unsigned char *pSidOriginalUser, [in] DWORD cbByteCur, [in, size_is(cbByteCur)] unsigned char *pSidCurrentUser, [in] BOOL bCurrentUserInpersonatingInProc);
+    HRESULT OnAuthenticateFail([in] COMSVCSEVENTINFO *pinfo, [in] REFGUID guidActivity, [in] ULONG64 ObjectID, [in] REFGUID guidIID, [in] DWORD iMeth, [in] DWORD cbByteOrig, [in, size_is(cbByteOrig)] unsigned char *pSidOriginalUser, [in] DWORD cbByteCur, [in, size_is(cbByteCur)] unsigned char *pSidCurrentUser, [in] BOOL bCurrentUserInpersonatingInProc);
+}
+
+[
+    object,
+    uuid(683130AD-2E50-11D2-98A5-00C04F8EE1C4),
+    hidden,
+    pointer_default(unique)
+]
+interface IComObjectPoolEvents : IUnknown
+{
+    HRESULT OnObjPoolPutObject([in] COMSVCSEVENTINFO *pinfo, [in] REFGUID guidObject, [in] int nReason, [in] DWORD dwAvailable, [in] ULONG64 oid);
+    HRESULT OnObjPoolGetObject([in] COMSVCSEVENTINFO *pinfo, [in] REFGUID guidActivity, [in] REFGUID guidObject, [in] DWORD dwAvailable, [in] ULONG64 oid);
+    HRESULT OnObjPoolRecycleToTx([in] COMSVCSEVENTINFO *pinfo, [in] REFGUID guidActivity, [in] REFGUID guidObject, [in] REFGUID guidTx, [in] ULONG64 objid);
+    HRESULT OnObjPoolGetFromTx([in] COMSVCSEVENTINFO *pinfo, [in] REFGUID guidActivity, [in] REFGUID guidObject, [in] REFGUID guidTx, [in] ULONG64 objid);
+}
+
+[
+    object,
+    uuid(683130AE-2E50-11D2-98A5-00C04F8EE1C4),
+    hidden,
+    pointer_default(unique)
+]
+interface IComObjectPoolEvents2 : IUnknown
+{
+    HRESULT OnObjPoolCreateObject([in] COMSVCSEVENTINFO *pinfo, [in] REFGUID guidObject, [in] DWORD dwObjsCreated, [in] ULONG64 oid);
+    HRESULT OnObjPoolDestroyObject([in] COMSVCSEVENTINFO *pinfo, [in] REFGUID guidObject, [in] DWORD dwObjsCreated, [in] ULONG64 oid);
+    HRESULT OnObjPoolCreateDecision([in] COMSVCSEVENTINFO *pinfo, [in] DWORD dwThreadsWaiting, [in] DWORD dwAvail, [in] DWORD dwCreated, [in] DWORD dwMin, [in] DWORD dwMax);
+    HRESULT OnObjPoolTimeout([in] COMSVCSEVENTINFO *pinfo, [in] REFGUID guidObject, [in] REFGUID guidActivity, [in] DWORD dwTimeout);
+    HRESULT OnObjPoolCreatePool([in] COMSVCSEVENTINFO *pinfo, [in] REFGUID guidObject, [in] DWORD dwMin, [in] DWORD dwMax, [in] DWORD dwTimeout);
+}
+
+[
+    object,
+    uuid(683130AF-2E50-11D2-98A5-00C04F8EE1C4),
+    hidden,
+    pointer_default(unique)
+]
+interface IComObjectConstructionEvents : IUnknown
+{
+    HRESULT OnObjectConstruct([in] COMSVCSEVENTINFO *pinfo, [in] REFGUID guidObject, [in] LPCOLESTR sConstructString, [in] ULONG64 oid);
+}
+
+[
+    object,
+    uuid(683130B0-2E50-11D2-98A5-00C04F8EE1C4),
+    hidden,
+    pointer_default(unique)
+]
+interface IComActivityEvents : IUnknown
+{
+    HRESULT OnActivityCreate([in] COMSVCSEVENTINFO *pinfo, [in] REFGUID guidActivity);
+    HRESULT OnActivityDestroy([in] COMSVCSEVENTINFO *pinfo, [in] REFGUID guidActivity);
+    HRESULT OnActivityEnter([in] COMSVCSEVENTINFO *pinfo, [in] REFGUID guidCurrent, [in] REFGUID guidEntered, [in] DWORD dwThread);
+    HRESULT OnActivityTimeout([in] COMSVCSEVENTINFO *pinfo, [in] REFGUID guidCurrent, [in] REFGUID guidEntered, [in] DWORD dwThread, [in] DWORD dwTimeout);
+    HRESULT OnActivityReenter([in] COMSVCSEVENTINFO *pinfo, [in] REFGUID guidCurrent, [in] DWORD dwThread, [in] DWORD dwCallDepth);
+    HRESULT OnActivityLeave([in] COMSVCSEVENTINFO *pinfo, [in] REFGUID guidCurrent, [in] REFGUID guidLeft);
+    HRESULT OnActivityLeaveSame([in] COMSVCSEVENTINFO *pinfo, [in] REFGUID guidCurrent, [in] DWORD dwCallDepth);
+}
+
+[
+    object,
+    uuid(683130B1-2E50-11D2-98A5-00C04F8EE1C4),
+    hidden,
+    pointer_default(unique)
+]
+interface IComIdentityEvents : IUnknown
+{
+    HRESULT OnIISRequestInfo([in] COMSVCSEVENTINFO *pinfo, [in] ULONG64 objid, [in] LPCOLESTR pszClientIP, [in] LPCOLESTR pszServerIP, [in] LPCOLESTR pszURL);
+}
+
+[
+    object,
+    uuid(683130B2-2E50-11D2-98A5-00C04F8EE1C4),
+    hidden,
+    pointer_default(unique)
+]
+interface IComQCEvents : IUnknown
+{
+    HRESULT OnQCRecord([in] COMSVCSEVENTINFO *pinfo, [in] ULONG64 objid, [in] WCHAR szQueue[60], [in] REFGUID guidMsgId, [in] REFGUID guidWorkFlowId, [in] HRESULT msmqhr);
+    HRESULT OnQCQueueOpen([in] COMSVCSEVENTINFO *pinfo, [in] WCHAR szQueue[60], [in] ULONG64 QueueID, [in] HRESULT hr);
+    HRESULT OnQCReceive([in] COMSVCSEVENTINFO *pinfo, [in] ULONG64 QueueID, [in] REFGUID guidMsgId, [in] REFGUID guidWorkFlowId, [in] HRESULT hr);
+    HRESULT OnQCReceiveFail([in] COMSVCSEVENTINFO *pinfo, [in] ULONG64 QueueID, [in] HRESULT msmqhr);
+    HRESULT OnQCMoveToReTryQueue([in] COMSVCSEVENTINFO *pinfo, [in] REFGUID guidMsgId, [in] REFGUID guidWorkFlowId, [in] DWORD RetryIndex);
+    HRESULT OnQCMoveToDeadQueue([in] COMSVCSEVENTINFO *pinfo, [in] REFGUID guidMsgId, [in] REFGUID guidWorkFlowId);
+    HRESULT OnQCPlayback([in] COMSVCSEVENTINFO *pinfo, [in] ULONG64 objid, [in] REFGUID guidMsgId, [in] REFGUID guidWorkFlowId, [in] HRESULT hr);
+}
+
+[
+    object,
+    uuid(683130B3-2E50-11D2-98A5-00C04F8EE1C4),
+    hidden,
+    pointer_default(unique)
+]
+interface IComExceptionEvents : IUnknown
+{
+    HRESULT OnExceptionUser([in] COMSVCSEVENTINFO *pinfo, [in] DWORD code, [in] ULONG64 address, [in] LPCOLESTR pszStackTrace);
+}
+
+[
+    object,
+    uuid(683130B5-2E50-11D2-98A5-00C04F8EE1C4),
+    hidden,
+    pointer_default(unique)
+]
+interface IComCRMEvents : IUnknown
+{
+    HRESULT OnCRMRecoveryStart([in] COMSVCSEVENTINFO *pinfo, [in] GUID guidApp);
+    HRESULT OnCRMRecoveryDone([in] COMSVCSEVENTINFO *pinfo, [in] GUID guidApp);
+    HRESULT OnCRMCheckpoint([in] COMSVCSEVENTINFO *pinfo, [in] GUID guidApp);
+    HRESULT OnCRMBegin([in] COMSVCSEVENTINFO *pinfo, [in] GUID guidClerkCLSID, [in] GUID guidActivity, [in] GUID guidTx, [in] WCHAR szProgIdCompensator[64], [in] WCHAR szDescription[64]);
+    HRESULT OnCRMPrepare([in] COMSVCSEVENTINFO *pinfo, [in] GUID guidClerkCLSID);
+    HRESULT OnCRMCommit([in] COMSVCSEVENTINFO *pinfo, [in] GUID guidClerkCLSID);
+    HRESULT OnCRMAbort([in] COMSVCSEVENTINFO *pinfo, [in] GUID guidClerkCLSID);
+    HRESULT OnCRMIndoubt([in] COMSVCSEVENTINFO *pinfo, [in] GUID guidClerkCLSID);
+    HRESULT OnCRMDone([in] COMSVCSEVENTINFO *pinfo, [in] GUID guidClerkCLSID);
+    HRESULT OnCRMRelease([in] COMSVCSEVENTINFO *pinfo, [in] GUID guidClerkCLSID);
+    HRESULT OnCRMAnalyze([in] COMSVCSEVENTINFO *pinfo, [in] GUID guidClerkCLSID, [in] DWORD dwCrmRecordType, [in] DWORD dwRecordSize);
+    HRESULT OnCRMWrite([in] COMSVCSEVENTINFO *pinfo, [in] GUID guidClerkCLSID, [in] BOOL fVariants, [in] DWORD dwRecordSize);
+    HRESULT OnCRMForget([in] COMSVCSEVENTINFO *pinfo, [in] GUID guidClerkCLSID);
+    HRESULT OnCRMForce([in] COMSVCSEVENTINFO *pinfo, [in] GUID guidClerkCLSID);
+    HRESULT OnCRMDeliver([in] COMSVCSEVENTINFO *pinfo, [in] GUID guidClerkCLSID, [in] BOOL fVariants, [in] DWORD dwRecordSize);
+}
+
+[
+    object,
+    uuid(FB388AAA-567D-4024-AF8E-6E93EE748573),
+    hidden,
+    pointer_default(unique)
+]
+interface IComMethod2Events : IUnknown
+{
+    HRESULT OnMethodCall2([in] COMSVCSEVENTINFO *pinfo, [in] ULONG64 oid, [in] REFCLSID guidCid, [in] REFIID guidRid, [in] DWORD dwThread, [in] DWORD iMeth);
+    HRESULT OnMethodReturn2([in] COMSVCSEVENTINFO *pinfo, [in] ULONG64 oid, [in] REFCLSID guidCid, [in] REFIID guidRid, [in] DWORD dwThread, [in] DWORD iMeth, [in] HRESULT hresult);
+    HRESULT OnMethodException2([in] COMSVCSEVENTINFO *pinfo, [in] ULONG64 oid, [in] REFCLSID guidCid, [in] REFIID guidRid, [in] DWORD dwThread, [in] DWORD iMeth);
+}
+
+[
+    object,
+    uuid(4E6CDCC9-FB25-4FD5-9CC5-C9F4B6559CEC),
+    hidden,
+    pointer_default(unique)
+]
+interface IComTrackingInfoEvents : IUnknown
+{
+    HRESULT OnNewTrackingInfo([in] IUnknown *pToplevelCollection);
+}
+
+[
+    object,
+    uuid(1290BC1A-B219-418D-B078-5934DED08242),
+    hidden,
+    pointer_default(unique)
+]
+interface IComApp2Events : IUnknown
+{
+    HRESULT OnAppActivation2([in] COMSVCSEVENTINFO *pinfo, [in] GUID guidApp, [in] GUID guidProcess);
+    HRESULT OnAppShutdown2([in] COMSVCSEVENTINFO *pinfo, [in] GUID guidApp);
+    HRESULT OnAppForceShutdown2([in] COMSVCSEVENTINFO *pinfo, [in] GUID guidApp);
+    HRESULT OnAppPaused2([in] COMSVCSEVENTINFO *pinfo, [in] GUID guidApp, [in] BOOL bPaused);
+    HRESULT OnAppRecycle2([in] COMSVCSEVENTINFO *pinfo, [in] GUID guidApp, [in] GUID guidProcess, [in] LONG lReason);
+}
+
+[
+    object,
+    uuid(A136F62A-2F94-4288-86E0-D8A1FA4C0299),
+    hidden,
+    pointer_default(unique)
+]
+interface IComTransaction2Events : IUnknown
+{
+    HRESULT OnTransactionStart2([in] COMSVCSEVENTINFO *pinfo, [in] REFGUID guidTx, [in] REFGUID tsid, [in] BOOL fRoot, [in] int nIsolationLevel);
+    HRESULT OnTransactionPrepare2([in] COMSVCSEVENTINFO *pinfo, [in] REFGUID guidTx, [in] BOOL fVoteYes);
+    HRESULT OnTransactionAbort2([in] COMSVCSEVENTINFO *pinfo, [in] REFGUID guidTx);
+    HRESULT OnTransactionCommit2([in] COMSVCSEVENTINFO *pinfo, [in] REFGUID guidTx);
+}
+
+[
+    object,
+    uuid(20E3BF07-B506-4AD5-A50C-D2CA5B9C158E),
+    hidden,
+    pointer_default(unique)
+]
+interface IComInstance2Events : IUnknown
+{
+    HRESULT OnObjectCreate2([in] COMSVCSEVENTINFO *pinfo, [in] REFGUID guidActivity, [in] REFCLSID clsid, [in] REFGUID tsid, [in] ULONG64 CtxtID, [in] ULONG64 ObjectID, [in] REFGUID guidPartition);
+    HRESULT OnObjectDestroy2([in] COMSVCSEVENTINFO *pinfo, [in] ULONG64 CtxtID);
+}
+
+[
+    object,
+    uuid(65BF6534-85EA-4F64-8CF4-3D974B2AB1CF),
+    hidden,
+    pointer_default(unique)
+]
+interface IComObjectPool2Events : IUnknown
+{
+    HRESULT OnObjPoolPutObject2([in] COMSVCSEVENTINFO *pinfo, [in] REFGUID guidObject, [in] int nReason, [in] DWORD dwAvailable, [in] ULONG64 oid);
+    HRESULT OnObjPoolGetObject2([in] COMSVCSEVENTINFO *pinfo, [in] REFGUID guidActivity, [in] REFGUID guidObject, [in] DWORD dwAvailable, [in] ULONG64 oid, [in] REFGUID guidPartition);
+    HRESULT OnObjPoolRecycleToTx2([in] COMSVCSEVENTINFO *pinfo, [in] REFGUID guidActivity, [in] REFGUID guidObject, [in] REFGUID guidTx, [in] ULONG64 objid);
+    HRESULT OnObjPoolGetFromTx2([in] COMSVCSEVENTINFO *pinfo, [in] REFGUID guidActivity, [in] REFGUID guidObject, [in] REFGUID guidTx, [in] ULONG64 objid, [in] REFGUID guidPartition);
+}
+
+[
+    object,
+    uuid(4B5A7827-8DF2-45C0-8F6F-57EA1F856A9F),
+    hidden,
+    pointer_default(unique)
+]
+interface IComObjectConstruction2Events : IUnknown
+{
+    HRESULT OnObjectConstruct2([in] COMSVCSEVENTINFO *pinfo, [in] REFGUID guidObject, [in] LPCOLESTR sConstructString, [in] ULONG64 oid, [in] REFGUID guidPartition);
+}
+
+[
+    object,
+    uuid(605CF82C-578E-4298-975D-82BABCD9E053),
+    hidden,
+    pointer_default(unique)
+]
+interface IComLTxEvents : IUnknown
+{
+    HRESULT OnLtxTransactionStart([in] COMSVCSEVENTINFO *pinfo, [in] GUID guidLtx, [in] GUID tsid, [in] LONG fRoot, [in] int nIsolationLevel);
+    HRESULT OnLtxTransactionPrepare([in] COMSVCSEVENTINFO *pinfo, [in] GUID guidLtx, [in] LONG fVote);
+    HRESULT OnLtxTransactionAbort([in] COMSVCSEVENTINFO *pinfo, [in] GUID guidLtx);
+    HRESULT OnLtxTransactionCommit([in] COMSVCSEVENTINFO *pinfo, [in] GUID guidLtx);
+    HRESULT OnLtxTransactionPromote([in] COMSVCSEVENTINFO *pinfo, [in] GUID guidLtx, [in] GUID txnId);
+}
+
+[
+    object,
+    uuid(D6D48A3C-D5C5-49E7-8C74-99E4889ED52F),
+    hidden,
+    pointer_default(unique)
+]
+interface ISystemAppEventData : IUnknown
+{
+    HRESULT Startup();
+    HRESULT OnDataChanged([in] DWORD dwPid, [in] DWORD dwMask, [in] DWORD dwNumberSinks, [in] BSTR bstrDwMethodMask, [in] DWORD dwReason, [in] ULONG64 u64TraceHandle);
+}
+
+[
+    object,
+    uuid(70C8E441-C7ED-11D1-82FB-00A0C91EEDE9),
+    pointer_default(unique)
+]
+interface ICrmMonitorLogRecords : IUnknown
+{
+    [propget] HRESULT Count([out, retval] LONG *pVal);
+    [propget] HRESULT TransactionState([out, retval] CrmTransactionState *pVal);
+    [propget] HRESULT StructuredRecords([out, retval] VARIANT_BOOL *pVal);
+    HRESULT GetLogRecord([in] DWORD dwIndex, [in, out] CrmLogRecordRead *pCrmLogRec);
+    HRESULT GetLogRecordVariants([in] VARIANT IndexNumber, [out, retval] VARIANT *pLogRecord);
+}
+
+[
+    object,
+    uuid(70C8E443-C7ED-11D1-82FB-00A0C91EEDE9),
+    pointer_default(unique)
+]
+interface ICrmMonitor : IUnknown
+{
+    HRESULT GetClerks([out, retval] ICrmMonitorClerks **pClerks);
+    HRESULT HoldClerk([in] VARIANT Index, [out, retval] VARIANT *pItem);
+}
+
+[
+    object,
+    uuid(70C8E442-C7ED-11D1-82FB-00A0C91EEDE9),
+    dual,
+    pointer_default(unique)
+]
+interface ICrmMonitorClerks : IDispatch
+{
+    [id(DISPID_VALUE)] HRESULT Item([in] VARIANT Index, [out, retval] VARIANT *pRetVal);
+    [propget, restricted, id(DISPID_NEWENUM)] HRESULT _NewEnum([out, retval] IUnknown **pRetVal);
+    [propget, id(0x1)] HRESULT Count([out, retval] LONG *pRetVal);
+    [id(0x2)] HRESULT ProgIdCompensator([in] VARIANT Index, [out, retval] VARIANT *pRetVal);
+    [id(0x3)] HRESULT Description([in] VARIANT Index, [out, retval] VARIANT *pRetVal);
+    [id(0x4)] HRESULT TransactionUOW([in] VARIANT Index, [out, retval] VARIANT *pRetVal);
+    [id(0x5)] HRESULT ActivityId([in] VARIANT Index, [out, retval] VARIANT *pRetVal);
+}
+
+[
+    object,
+    uuid(588A085A-B795-11D1-8054-00C04FC340EE),
+    dual,
+    hidden,
+    nonextensible,
+    pointer_default(unique)
+]
+interface IMessageMover : IDispatch
+{
+    [propget, id(0x1)] HRESULT SourcePath([out, retval] BSTR *pRetVal);
+    [propput, id(0x1)] HRESULT SourcePath([in] BSTR arg0);
+    [propget, id(0x2)] HRESULT DestPath([out, retval] BSTR *pRetVal);
+    [propput, id(0x2)] HRESULT DestPath([in] BSTR arg0);
+    [propget, id(0x3)] HRESULT CommitBatchSize([out, retval] LONG *pRetVal);
+    [propput, id(0x3)] HRESULT CommitBatchSize([in] LONG arg0);
+    [id(0x4)] HRESULT MoveMessages([out, retval] LONG *pRetVal);
+}
+
+[
+    object,
+    uuid(5CB31E10-2B5F-11CF-BE10-00AA00A2FA25),
+    hidden,
+    pointer_default(unique)
+]
+interface IDispenserManager : IUnknown
+{
+    HRESULT RegisterDispenser([in] IDispenserDriver *pDispenserDriver, [in] LPCOLESTR szDispenserName, [out] IHolder **ppDispenserHolder);
+    HRESULT GetContext([out] INSTID *pId, [out] TRANSID *pTransaction);
+}
+
+[
+    object,
+    uuid(208B3651-2B48-11CF-BE10-00AA00A2FA25),
+    hidden,
+    pointer_default(unique)
+]
+interface IDispenserDriver : IUnknown
+{
+    HRESULT CreateResource([in] const RESTYPID ResTypId, [out] RESID *pResId, [out] TIMEINSECS *pSecsFreeBeforeDestroy);
+    HRESULT RateResource([in] const RESTYPID ResTypId, [in] const RESID ResId, [in] const BOOL fRequiresTransactionEnlistment, [out] RESOURCERATING *pRating);
+    HRESULT EnlistResource([in] const RESID ResId, [in] const TRANSID TransId);
+    HRESULT ResetResource([in] const RESID ResId);
+    HRESULT DestroyResource([in] const RESID ResId);
+    HRESULT DestroyResourceS([in] constSRESID ResId);
+}
+
+[
+    object,
+    uuid(BF6A1850-2B45-11CF-BE10-00AA00A2FA25),
+    hidden,
+    pointer_default(unique)
+]
+interface IHolder : IUnknown
+{
+    HRESULT AllocResource([in] const RESTYPID ResTypId, [out] RESID *pResId);
+    HRESULT FreeResource([in] const RESID ResId);
+    HRESULT TrackResource([in] const RESID ResId);
+    HRESULT TrackResourceS([in] constSRESID ResId);
+    HRESULT UntrackResource([in] const RESID ResId, [in] const BOOL fDestroy);
+    HRESULT UntrackResourceS([in] constSRESID ResId, [in] const BOOL fDestroy);
+    HRESULT Close();
+    HRESULT RequestDestroyResource([in] const RESID ResId);
+}
+
+[
+    object,
+    uuid(5CB31E11-2B5F-11CF-BE10-00AA00A2FA25),
+    hidden,
+    pointer_default(unique)
+]
+interface IDispenserManagerShutdownGuarantee : IUnknown
+{
+    HRESULT IsComPlusApp([out] LONG *pfIsComPlusApp);
+}
+
+[
+    object,
+    uuid(0A469861-5A91-43A0-99B6-D5E179BB0631),
+    pointer_default(unique)
+]
+interface IPoolManager : IDispatch
+{
+    HRESULT ShutdownPool([in] BSTR CLSIDOrProgID);
+}
+
+[
+    object,
+    uuid(9A9F12B8-80AF-47AB-A579-35EA57725370),
+    dual,
+    pointer_default(unique)
+]
+interface IEventServerTrace : IDispatch
+{
+    [id(0x1)] HRESULT StartTraceGuid([in] BSTR bstrguidEvent, [in] BSTR bstrguidFilter, [in] LONG lPidFilter);
+    [id(0x2)] HRESULT StopTraceGuid([in] BSTR bstrguidEvent, [in] BSTR bstrguidFilter, [in] LONG lPidFilter);
+    [id(0x3)] HRESULT EnumTraceGuid([out] LONG *plCntGuids, [out] BSTR *pbstrGuidList);
+}
+
+[
+    object,
+    uuid(F1CB0608-EC04-11D1-93AE-00AA00BA3258),
+    hidden,
+    pointer_default(unique)
+]
+interface IEventServer : IUnknown
+{
+    HRESULT DispatchManyEvents([in] DWORD dwPid, [in] GUID *appGuid, [in] DWORD dwEvents, [in] DWORD cbSize, [in, size_is(cbSize)] unsigned char *pBuf);
+    HRESULT DispatchOneEvent([in] DWORD dwPid, [in] GUID *appGuid, [in] DWORD cbSize, [in, size_is(cbSize)] unsigned char *pBuf);
+    HRESULT AddProcess([in] DWORD dwPid, [in] GUID *guidApp, [out] DWORD *pdwInitialEventMask, [out] IUnknown **ppUnkCallfactory);
+    HRESULT RemoveProcess([in] DWORD dwPid);
+    HRESULT GetCallFactoryObject([in] DWORD dwPid, [out] IUnknown **ppUnkCallfactory);
+}
+
+[
+    object,
+    uuid(378F3CA7-BD24-481C-8DC3-5E5ECE1BCAD7),
+    hidden,
+    pointer_default(unique)
+]
+interface IEventServer2 : IUnknown
+{
+    HRESULT AddProcess2([in] DWORD dwPid, [in] GUID *guidApp, [in] GUID *guidAppInstance, [in] GUID *guidPartition, [in] DWORD dwNumberSinks, [out] DWORD *pdwInitialEventMask, [in, out] DWORD *pdwInitialMetMasks, [out] IUnknown **ppUnkCallfactory, [out] ULONG64 *pTraceHandle);
+    HRESULT RemoveProcess2([in] DWORD dwPid);
+    HRESULT UpdateEventMasks([in] DWORD dwPid, [in] DWORD dwNumberSinks, [in] DWORD dwEventMasksIn, [out] DWORD *pdwEventMaskOut, [in, out] DWORD *pdwMetMasksInOut);
+}
+
+[
+    object,
+    uuid(413DAFB0-BCF4-11D1-861D-0080C729264D),
+    hidden,
+    pointer_default(unique)
+]
+interface IReceiveAppData : IUnknown
+{
+    HRESULT Register([in] GUID *pApplId, [in] GUID *pguidApplPartitionId, [in] GUID *pApplInstanceId, [in] COMPLUS_APPTYPE eAppType, [in] LPWSTR pwszProcessName, [in] IUnknown *pUnkPackageObject, [in] DWORD dwAppProcessId, [in] DWORD dwState, [in] RECYCLE_INFO *pRecycleInfo, [out] DWORD *pidApp, [out] DWORD *pPushRate);
+    HRESULT PushAppData([in] DWORD idApp, [in] APPSTATISTICS appData, [in] DWORD dwAppState, [in] DWORD nCLSIDs, [in] CLSIDDATA2 *clsids);
+    HRESULT Unregister([in] DWORD idApp);
+    HRESULT RecycleCallingProcess([in] DWORD idApp, [in] LONG lReasonCode);
+}
+
+[
+    object,
+    uuid(B60040E0-BCF3-11D1-861D-0080C729264D),
+    hidden,
+    pointer_default(unique)
+]
+interface IGetAppData : IUnknown
+{
+    HRESULT SetPushRate([in] DWORD dwPushRate);
+    HRESULT GetApps([out] DWORD *nApps, [out] appData **aAppData);
+    HRESULT GetAppData([in] DWORD idApp, [out] DWORD *nCLSIDs, [out] CLSIDDATA **aAppData);
+    HRESULT GetCLSIDData([in] DWORD idApp, [in] GUID clsid, [out] CLSIDDATA **ppAppData);
+    HRESULT Shutdown();
+}
+
+[
+    object,
+    uuid(23C9DD26-2355-4FE2-84DE-F779A238ADBD),
+    dual,
+    pointer_default(unique)
+]
+interface IProcessDump : IDispatch
+{
+    [id(0x1)] HRESULT IsSupported();
+    [id(0x2)] HRESULT DumpProcess([in] BSTR bstrInstanceID, [in] BSTR bstrDirectory, [in] DWORD dwMaxImages, [out, retval] BSTR *pRetVal);
+}
+
+[
+    object,
+    uuid(C7B67079-8255-42C6-9EC0-6994A3548780),
+    pointer_default(unique)
+]
+interface IAppDomainHelper : IDispatch
+{
+    [local] HRESULT pfnShutdownCB([in] void *pv);
+    [local] HRESULT Initialize([in] IUnknown *pUnkAD, [in] HRESULT (__stdcall *pfnShutdownCB)([in] void *pv), [in] void *pPool);
+    [local] HRESULT pfnCallbackCB([in] void *pv);
+    [local] HRESULT DoCallback([in] IUnknown *pUnkAD, [in] HRESULT (__stdcall *pfnCallbackCB)([in] void *pv), [in] void *pPool);
+}
+
+[
+    object,
+    uuid(391FFBB9-A8EE-432A-ABC8-BAA238DAB90F),
+    oleautomation,
+    pointer_default(unique)
+]
+interface IAssemblyLocator : IDispatch
+{
+    HRESULT GetModules([in] BSTR applicationDir, [in] BSTR ApplicationName, [in] BSTR assemblyName, [out, retval] SAFEARRAY(BSTR) *pModules);
+}
+
+[
+    uuid(2A005C00-A5DE-11CF-9E66-00AA00A3F464),
+    version(1.0)
+]
+library COMSVCSLib
+{
+    importlib("stdole2.tlb");
+
+    [uuid(ECABB0A4-7F19-11D2-978E-0000F8757E2A), noncreatable]
+    coclass SecurityCertificate
+    {
+        [default] interface ISecurityCertificateColl;
+    }
+
+    [uuid(ECABB0A5-7F19-11D2-978E-0000F8757E2A), noncreatable]
+    coclass SecurityIdentity
+    {
+        [default] interface ISecurityIdentityColl;
+    }
+
+    [uuid(ECABB0A6-7F19-11D2-978E-0000F8757E2A), noncreatable]
+    coclass SecurityCallers
+    {
+        [default] interface ISecurityCallersColl;
+    }
+
+    [uuid(ECABB0A7-7F19-11D2-978E-0000F8757E2A), noncreatable]
+    coclass SecurityCallContext
+    {
+        [default] interface ISecurityCallContext;
+    }
+
+    [uuid(ECABB0A8-7F19-11D2-978E-0000F8757E2A), appobject]
+    coclass GetSecurityCallContextAppObject
+    {
+        [default] interface IGetSecurityCallContext;
+    }
+
+    [uuid(71E38F91-7E88-11CF-9EDE-0080C78B7F89), appobject]
+    coclass AppServer
+    {
+        [default] interface IMTxAS;
+    }
+
+    [uuid(7999FC25-D3C6-11CF-ACAB-00A024A55AEF)]
+    coclass TransactionContext
+    {
+        [default] interface ITransactionContext;
+    }
+
+    [uuid(5CB66670-D3D4-11CF-ACAB-00A024A55AEF)]
+    coclass TransactionContextEx
+    {
+        [default] interface ITransactionContextEx;
+    }
+
+    [uuid(ECABB0AA-7F19-11D2-978E-0000F8757E2A)]
+    coclass ByotServerEx
+    {
+        [default] interface ICreateWithTipTransactionEx;
+        interface ICreateWithTransactionEx;
+    }
+
+    [uuid(ECABB0C8-7F19-11D2-978E-0000F8757E2A)]
+    coclass CServiceConfig
+    {
+        [default] interface IServiceInheritanceConfig;
+        interface IServiceThreadPoolConfig;
+        interface IServiceTransactionConfig;
+        interface IServiceSynchronizationConfig;
+        interface IServiceIISIntrinsicsConfig;
+        interface IServiceComTIIntrinsicsConfig;
+        interface IServiceTrackerConfig;
+        interface IServiceSxsConfig;
+        interface IServicePartitionConfig;
+    }
+
+    [uuid(ECABB0C9-7F19-11D2-978E-0000F8757E2A)]
+    coclass ServicePool
+    {
+        [default] interface IServicePool;
+    }
+
+    [uuid(ECABB0CA-7F19-11D2-978E-0000F8757E2A)]
+    coclass ServicePoolConfig
+    {
+        [default] interface IServicePoolConfig;
+    }
+
+    [uuid(2A005C05-A5DE-11CF-9E66-00AA00A3F464), noncreatable]
+    coclass SharedProperty
+    {
+        [default] interface ISharedProperty;
+    }
+
+    [uuid(2A005C0B-A5DE-11CF-9E66-00AA00A3F464), noncreatable]
+    coclass SharedPropertyGroup
+    {
+        [default] interface ISharedPropertyGroup;
+    }
+
+    [uuid(2A005C11-A5DE-11CF-9E66-00AA00A3F464)]
+    coclass SharedPropertyGroupManager
+    {
+        [default] interface ISharedPropertyGroupManager;
+    }
+
+    [uuid(ECABB0AB-7F19-11D2-978E-0000F8757E2A)]
+    coclass COMEvents
+    {
+        [default] interface IMtsEvents;
+        interface IMtsEventInfo;
+    }
+
+    [uuid(ECABB0AC-7F19-11D2-978E-0000F8757E2A)]
+    coclass CoMTSLocator
+    {
+        [default] interface IMTSLocator;
+    }
+
+    [uuid(4B2E958D-0393-11D1-B1AB-00AA00BA3258)]
+    coclass MtsGrp
+    {
+        [default] interface IMtsGrp;
+    }
+
+    [uuid(ECABB0C3-7F19-11D2-978E-0000F8757E2A)]
+    coclass ComServiceEvents
+    {
+        [default] interface IComThreadEvents;
+        interface IComUserEvent;
+        interface IComAppEvents;
+        interface IComInstanceEvents;
+        interface IComTransactionEvents;
+        interface IComMethodEvents;
+        interface IComObjectEvents;
+        interface IComResourceEvents;
+        interface IComSecurityEvents;
+        interface IComObjectPoolEvents;
+        interface IComObjectPoolEvents2;
+        interface IComObjectConstructionEvents;
+        interface IComActivityEvents;
+        interface IComIdentityEvents;
+        interface IComQCEvents;
+        interface IComExceptionEvents;
+        interface IComCRMEvents;
+        interface IComMethod2Events;
+        interface IComTrackingInfoEvents;
+        interface IComApp2Events;
+        interface IComTransaction2Events;
+        interface IComInstance2Events;
+        interface IComObjectPool2Events;
+        interface IComObjectConstruction2Events;
+        interface IComLTxEvents;
+    }
+
+    [uuid(ECABB0C6-7F19-11D2-978E-0000F8757E2A)]
+    coclass ComSystemAppEventData
+    {
+        [default] interface ISystemAppEventData;
+    }
+
+    [uuid(ECABB0BD-7F19-11D2-978E-0000F8757E2A)]
+    coclass CRMClerk
+    {
+        [default] interface ICrmLogControl;
+        interface ICrmMonitorLogRecords;
+    }
+
+    [uuid(ECABB0BE-7F19-11D2-978E-0000F8757E2A)]
+    coclass CRMRecoveryClerk
+    {
+        [default] interface ICrmMonitor;
+    }
+
+    [uuid(ECABB0BF-7F19-11D2-978E-0000F8757E2A)]
+    coclass MessageMover
+    {
+        [default] interface IMessageMover;
+    }
+
+    [uuid(ECABB0C0-7F19-11D2-978E-0000F8757E2A)]
+    coclass DispenserManager
+    {
+        [default] interface IDispenserManager;
+        interface IDispenserManagerShutdownGuarantee;
+    }
+
+    [uuid(ECABAFB5-7F19-11D2-978E-0000F8757E2A)]
+    coclass PoolMgr
+    {
+        [default] interface IPoolManager;
+    }
+
+    [uuid(ECABAFBC-7F19-11D2-978E-0000F8757E2A)]
+    coclass EventServer
+    {
+        [default] interface IEventServerTrace;
+        interface IEventServer;
+        interface IEventServer2;
+    }
+
+    [uuid(ECABB0C4-7F19-11D2-978E-0000F8757E2A)]
+    coclass ProcessDump
+    {
+        [default] interface IProcessDump;
+    }
+
+    [uuid(ECABB0C5-7F19-11D2-978E-0000F8757E2A)]
+    coclass PartitionMoniker
+    {
+        [default] interface IMoniker;
+    }
+
+    [uuid(ECABB0C7-7F19-11D2-978E-0000F8757E2A)]
+    coclass SoapMoniker
+    {
+        [default] interface IMoniker;
+    }
+
+    [uuid(EF24F689-14F8-4D92-B4AF-D7B1F0E70FD4)]
+    coclass AppDomainHelper
+    {
+        [default] interface IAppDomainHelper;
+    }
+
+    [uuid(458AA3B5-265A-4B75-BC05-9BEA4630CF18)]
+    coclass ClrAssemblyLocator
+    {
+        [default] interface IAssemblyLocator;
+    }
+}
