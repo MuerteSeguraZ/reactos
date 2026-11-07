@@ -19,6 +19,7 @@ list(APPEND IDL_SOURCES
 #    cluadmex.idl
 #    cluscfgserver.idl
 #    cluscfgwizard.idl
+    comadmin.idl
     comcat.idl
     commoncontrols.idl
 #    confpriv.idl

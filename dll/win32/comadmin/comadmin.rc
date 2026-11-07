@@ -1,0 +1,5 @@
+#define REACTOS_VERSION_DLL
+#define REACTOS_STR_FILE_DESCRIPTION    "COM+ Administration Catalog"
+#define REACTOS_STR_INTERNAL_NAME       "comadmin"
+#define REACTOS_STR_ORIGINAL_FILENAME   "comadmin.dll"
+#include <reactos/version.rc>

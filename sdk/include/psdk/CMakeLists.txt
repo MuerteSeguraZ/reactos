@@ -25,6 +25,7 @@ list(APPEND SOURCE
     bits5_0.idl
 #   cmdbas.idl
 #   cmdtxt.idl
+    comadmin.idl
     comcat.idl
     commoncontrols.idl
     control.idl
