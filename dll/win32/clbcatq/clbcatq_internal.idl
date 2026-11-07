@@ -1,0 +1,92 @@
+/*
+ * PROJECT:     ReactOS COM+ catalog
+ * LICENSE:     MIT (https://spdx.org/licenses/MIT)
+ * PURPOSE:     Internal catalog interfaces
+ * COPYRIGHT:   Copyright 2026 Alex Mendoza <05alex.mendozaa@gmail.com>
+ */
+
+import "unknwn.idl";
+import "wtypes.idl";
+
+interface IUserToken;
+interface IPartitionProperty;
+
+[
+    local,
+    object,
+    uuid(000001FC-0000-0000-C000-000000000046),
+    pointer_default(unique)
+]
+interface IUserToken : IUnknown
+{
+    HRESULT GetUserClassesRootKey([out] void **phKey);
+    HRESULT ReleaseUserClassesRootKey();
+    HRESULT GetUserSid([out] BYTE **ppSid, [out] USHORT *pcbSid);
+    HRESULT GetUserToken([out] void **phToken);
+    HRESULT GetIntegritySID([out] BYTE **ppBuff, [out] USHORT *pCb);
+    HRESULT GetPrivateHiveComRootKey([out] void **phKey);
+    HRESULT ReleasePrivateHiveComRootKey();
+    HRESULT GetPackageName([out] LPWSTR *ppPackageName);
+    HRESULT IsUserHiveOK([out] LONG *pfOK);
+}
+
+[
+    local,
+    object,
+    uuid(000001F2-0000-0000-C000-000000000046),
+    pointer_default(unique)
+]
+interface IPartitionProperty : IUnknown
+{
+    HRESULT GetPartitionID([out] GUID *pGuid);
+    HRESULT SetPartitionID([in] REFGUID pGuid);
+}
+
+[
+    local,
+    object,
+    uuid(000001F8-0000-0000-C000-000000000046),
+    pointer_default(unique)
+]
+interface IPartitionLookup : IUnknown
+{
+    HRESULT GetDefaultPartitionForUser([out] IPartitionProperty **ppPartitionProperty);
+    HRESULT IsPartitionValidForUser([in] REFGUID pguidPartitionId, [out] LONG *pfIsPartitionValid);
+    HRESULT GetDefaultPartitionForUserByToken([in] IUserToken *pUserToken, [out] IPartitionProperty **ppPartitionProperty);
+    HRESULT IsPartitionValidForUserByToken([in] IUserToken *pUserToken, [in] REFGUID pguidPartitionId, [out] LONG *pfIsPartitionValid);
+    HRESULT IsLocalStoreEnabled([out] LONG *pfEnabled);
+    HRESULT IsDSLookupEnabled([out] LONG *pfEnabled);
+}
+
+[
+    local,
+    object,
+    uuid(A6304910-4115-11D2-8133-0060089F5FED),
+    pointer_default(unique)
+]
+interface IComCatalogInternal : IUnknown
+{
+    HRESULT GetClassInfo([in] DWORD dwFlags, [in] IUserToken *pUserToken, [in] REFGUID guidConfiguredClsid, [in] REFIID riid, [out] void **ppv, [in] void *pvReserved);
+    HRESULT GetApplicationInfo([in] IUserToken *pUserToken, [in] REFGUID guidApplId, [in] REFIID riid, [out] void **ppv, [in] void *pvReserved);
+    HRESULT GetProcessInfo([in] IUserToken *pUserToken, [in] REFGUID guidProcess, [in] REFIID riid, [out] void **ppv, [in] void *pvReserved);
+    HRESULT GetServerGroupInfo([in] IUserToken *pUserToken, [in] REFGUID guidServerGroup, [in] REFIID riid, [out] void **ppv, [in] void *pvReserved);
+    HRESULT GetRetQueueInfo([in] IUserToken *pUserToken, [in] LPWSTR wszFormatName, [in] REFIID riid, [out] void **ppv, [in] void *pvReserved);
+    HRESULT GetApplicationInfoForExe([in] IUserToken *pUserToken, [in] LPWSTR pwszExeName, [in] REFIID riid, [out] void **ppv, [in] void *pvReserved);
+    HRESULT GetTypeLibrary([in] IUserToken *pUserToken, [in] REFGUID guidTypeLib, [in] REFIID riid, [out] void **ppv, [in] void *pvReserved);
+    HRESULT GetInterfaceInfo([in] IUserToken *pUserToken, [in] REFGUID iidInterface, [in] REFIID riid, [out] void **ppv, [in] void *pComCatalog);
+    HRESULT FlushCache();
+    HRESULT GetClassInfoFromProgId([in] IUserToken *pUserToken, [in] LPWSTR pwszProgID, [in] REFIID riid, [out] void **ppv, [in] void *pComCatalog);
+    HRESULT GetProxyStubCLSIDForInterface([in] REFIID riid, [out] GUID *clsid);
+}
+
+[
+    local,
+    object,
+    uuid(3310DAB4-EDC0-4CE9-8A9C-8FEA2980FD89),
+    pointer_default(unique)
+]
+interface IComCatalog2Internal : IUnknown
+{
+    HRESULT GetClassInfoByPartition([in] DWORD dwFlags, [in] IUserToken *pUserToken, [in] REFGUID guidConfiguredClsid, [in] REFGUID guidPartitionId, [in] REFIID riid, [out] void **ppv, [in] void *pComCatalog);
+    HRESULT GetClassInfoByApplication([in] DWORD dwFlags, [in] IUserToken *pUserToken, [in] REFGUID guidConfiguredClsid, [in] REFGUID guidPartitionId, [in] REFGUID guidApplId, [in] REFIID riid, [out] void **ppv, [in] void *pComCatalog);
+}
