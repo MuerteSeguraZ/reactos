@@ -46,6 +46,7 @@ extern LONG g_ObjectCount;
 _Check_return_
 HRESULT
 ComAdminCreateCatalog(
+    _In_opt_ IUnknown *Outer,
     _In_ REFIID Riid,
     _Outptr_ PVOID *Object);
 
@@ -109,11 +110,6 @@ StoreReadValue(
     _In_ PCWSTR Path,
     _In_ PCWSTR ValueName,
     _Out_ VARIANT *Value);
-
-_Check_return_
-BOOL
-StoreKeyExists(
-    _In_ PCWSTR Path);
 
 /* collection.c */
 _Check_return_

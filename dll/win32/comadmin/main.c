@@ -68,10 +68,7 @@ factory_CreateInstance(
         return E_POINTER;
 
     *ppvObject = NULL;
-    if (pUnkOuter != NULL)
-        return CLASS_E_NOAGGREGATION;
-
-    return ComAdminCreateCatalog(riid, ppvObject);
+    return ComAdminCreateCatalog(pUnkOuter, riid, ppvObject);
 }
 
 static
@@ -242,6 +239,11 @@ DllRegisterServer(VOID)
     if (FAILED(hr))
         return hr;
 
+    /* CLSIDFromProgID doesn't follow CurVer here */
+    hr = RegSetString(HKEY_CLASSES_ROOT, COMADMIN_PROGID L"\\CLSID", NULL, COMADMIN_CLSID_STRING);
+    if (FAILED(hr))
+        return hr;
+
     hr = RegSetString(HKEY_CLASSES_ROOT, COMADMIN_PROGID L"\\CurVer", NULL, COMADMIN_PROGID_VERSIONED);
     if (FAILED(hr))
         return hr;
@@ -271,6 +273,7 @@ DllUnregisterServer(VOID)
         L"CLSID\\" COMADMIN_CLSID_STRING L"\\InprocServer32",
         L"CLSID\\" COMADMIN_CLSID_STRING,
         COMADMIN_PROGID L"\\CurVer",
+        COMADMIN_PROGID L"\\CLSID",
         COMADMIN_PROGID,
         COMADMIN_PROGID_VERSIONED L"\\CLSID",
         COMADMIN_PROGID_VERSIONED

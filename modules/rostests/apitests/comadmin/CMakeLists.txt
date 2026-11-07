@@ -1,0 +1,5 @@
+add_executable(comadmin_apitest comadmin.cpp testlist.c)
+target_link_libraries(comadmin_apitest wine uuid cpprt)
+set_module_type(comadmin_apitest win32cui)
+add_importlibs(comadmin_apitest ole32 oleaut32 user32 msvcrt kernel32)
+add_rostests_file(TARGET comadmin_apitest)

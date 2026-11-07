@@ -518,7 +518,19 @@ collection_GetCollection(
     *ppCatalogCollection = NULL;
 
     if (This->Type == CollectionRoot)
+    {
+        BSTR RootKey = NULL;
+
+        if (V_VT(&varObjectKey) == VT_BSTR)
+            RootKey = V_BSTR(&varObjectKey);
+        else if (V_VT(&varObjectKey) == (VT_BSTR | VT_BYREF))
+            RootKey = *V_BSTRREF(&varObjectKey);
+
+        if (RootKey == NULL || RootKey[0] == L'\0')
+            return E_INVALIDARG;
+
         return ComAdminGetTopLevelCollection(bstrCollName, ppCatalogCollection);
+    }
 
     if (This->Type != CollectionApplications)
         return E_INVALIDARG;
@@ -551,12 +563,6 @@ collection_GetCollection(
     ObjectPath = StoreJoinPath(This->Path, Key);
     if (ObjectPath == NULL)
         return E_OUTOFMEMORY;
-
-    if (!StoreKeyExists(ObjectPath))
-    {
-        hr = E_INVALIDARG;
-        goto Cleanup;
-    }
 
     CollectionPath = StoreJoinPath(ObjectPath, Name);
     if (CollectionPath == NULL)

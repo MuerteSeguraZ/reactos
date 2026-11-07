@@ -54,19 +54,6 @@ StoreFreeKeys(
     HeapFree(GetProcessHeap(), 0, Keys);
 }
 
-BOOL
-StoreKeyExists(
-    _In_ PCWSTR Path)
-{
-    HKEY hKey;
-
-    if (RegOpenKeyExW(HKEY_LOCAL_MACHINE, Path, 0, KEY_READ, &hKey) != ERROR_SUCCESS)
-        return FALSE;
-
-    RegCloseKey(hKey);
-    return TRUE;
-}
-
 HRESULT
 StoreEnumSubKeys(
     _In_ PCWSTR Path,

@@ -10,6 +10,8 @@
 typedef struct _COMADMIN_CATALOG
 {
     ICOMAdminCatalog2 ICOMAdminCatalog2_iface;
+    IUnknown IUnknown_inner;
+    IUnknown *pOuter;
     LONG RefCount;
 } COMADMIN_CATALOG, *PCOMADMIN_CATALOG;
 
@@ -22,6 +24,91 @@ impl_from_ICOMAdminCatalog2(
 }
 
 static
+PCOMADMIN_CATALOG
+impl_from_inner(
+    _In_ IUnknown *iface)
+{
+    return CONTAINING_RECORD(iface, COMADMIN_CATALOG, IUnknown_inner);
+}
+
+static
+IUnknown *
+CatalogGetControllingUnknown(
+    _In_ PCOMADMIN_CATALOG This)
+{
+    return (This->pOuter != NULL) ? This->pOuter : &This->IUnknown_inner;
+}
+
+static
+HRESULT
+WINAPI
+inner_QueryInterface(
+    _In_ IUnknown *iface,
+    _In_ REFIID riid,
+    _COM_Outptr_ PVOID *ppvObject)
+{
+    PCOMADMIN_CATALOG This = impl_from_inner(iface);
+
+    if (ppvObject == NULL)
+        return E_POINTER;
+
+    if (IsEqualIID(riid, &IID_IUnknown))
+    {
+        *ppvObject = &This->IUnknown_inner;
+    }
+    else if (IsEqualIID(riid, &IID_IDispatch) ||
+             IsEqualIID(riid, &IID_ICOMAdminCatalog) ||
+             IsEqualIID(riid, &IID_ICOMAdminCatalog2))
+    {
+        *ppvObject = &This->ICOMAdminCatalog2_iface;
+    }
+    else
+    {
+        *ppvObject = NULL;
+        return E_NOINTERFACE;
+    }
+
+    IUnknown_AddRef((IUnknown *)*ppvObject);
+    return S_OK;
+}
+
+static
+ULONG
+WINAPI
+inner_AddRef(
+    _In_ IUnknown *iface)
+{
+    PCOMADMIN_CATALOG This = impl_from_inner(iface);
+
+    return InterlockedIncrement(&This->RefCount);
+}
+
+static
+ULONG
+WINAPI
+inner_Release(
+    _In_ IUnknown *iface)
+{
+    PCOMADMIN_CATALOG This = impl_from_inner(iface);
+    LONG RefCount = InterlockedDecrement(&This->RefCount);
+
+    if (RefCount == 0)
+    {
+        HeapFree(GetProcessHeap(), 0, This);
+        InterlockedDecrement(&g_ObjectCount);
+    }
+
+    return RefCount;
+}
+
+static const IUnknownVtbl g_InnerVtbl =
+{
+    inner_QueryInterface,
+    inner_AddRef,
+    inner_Release
+};
+
+static
 HRESULT
 WINAPI
 catalog_QueryInterface(
@@ -29,21 +116,9 @@ catalog_QueryInterface(
     _In_ REFIID riid,
     _COM_Outptr_ PVOID *ppvObject)
 {
-    if (ppvObject == NULL)
-        return E_POINTER;
+    PCOMADMIN_CATALOG This = impl_from_ICOMAdminCatalog2(iface);
 
-    if (IsEqualIID(riid, &IID_IUnknown) ||
-        IsEqualIID(riid, &IID_IDispatch) ||
-        IsEqualIID(riid, &IID_ICOMAdminCatalog) ||
-        IsEqualIID(riid, &IID_ICOMAdminCatalog2))
-    {
-        *ppvObject = iface;
-        ICOMAdminCatalog2_AddRef(iface);
-        return S_OK;
-    }
-
-    *ppvObject = NULL;
-    return E_NOINTERFACE;
+    return IUnknown_QueryInterface(CatalogGetControllingUnknown(This), riid, ppvObject);
 }
 
 static
@@ -54,7 +129,7 @@ catalog_AddRef(
 {
     PCOMADMIN_CATALOG This = impl_from_ICOMAdminCatalog2(iface);
 
-    return InterlockedIncrement(&This->RefCount);
+    return IUnknown_AddRef(CatalogGetControllingUnknown(This));
 }
 
 static
@@ -64,15 +139,8 @@ catalog_Release(
     _In_ ICOMAdminCatalog2 *iface)
 {
     PCOMADMIN_CATALOG This = impl_from_ICOMAdminCatalog2(iface);
-    LONG RefCount = InterlockedDecrement(&This->RefCount);
 
-    if (RefCount == 0)
-    {
-        HeapFree(GetProcessHeap(), 0, This);
-        InterlockedDecrement(&g_ObjectCount);
-    }
-
-    return RefCount;
+    return IUnknown_Release(CatalogGetControllingUnknown(This));
 }
 
 static
@@ -233,8 +301,8 @@ WINAPI
 catalog_GetCollectionByQuery(
     _In_ ICOMAdminCatalog2 *iface,
     _In_ BSTR bstrCollName,
-    _In_ SAFEARRAY **ppsaVarQuery,
-    _Outptr_ IDispatch **ppCatalogCollection)
+    _In_ SAFEARRAY ** ppsaVarQuery,
+    _Outptr_ IDispatch ** ppCatalogCollection)
 {
     return E_NOTIMPL;
 }
@@ -351,8 +419,8 @@ WINAPI
 catalog_InstallMultipleComponents(
     _In_ ICOMAdminCatalog2 *iface,
     _In_ BSTR bstrApplIDOrName,
-    _In_ SAFEARRAY **ppsaVarFileNames,
-    _In_ SAFEARRAY **ppsaVarCLSIDs)
+    _In_ SAFEARRAY ** ppsaVarFileNames,
+    _In_ SAFEARRAY ** ppsaVarCLSIDs)
 {
     return E_NOTIMPL;
 }
@@ -363,11 +431,11 @@ WINAPI
 catalog_GetMultipleComponentsInfo(
     _In_ ICOMAdminCatalog2 *iface,
     _In_ BSTR bstrApplIdOrName,
-    _In_ SAFEARRAY **ppsaVarFileNames,
-    _Outptr_ SAFEARRAY **ppsaVarCLSIDs,
-    _Outptr_ SAFEARRAY **ppsaVarClassNames,
-    _Outptr_ SAFEARRAY **ppsaVarFileFlags,
-    _Outptr_ SAFEARRAY **ppsaVarComponentFlags)
+    _In_ SAFEARRAY ** ppsaVarFileNames,
+    _Outptr_ SAFEARRAY ** ppsaVarCLSIDs,
+    _Outptr_ SAFEARRAY ** ppsaVarClassNames,
+    _Outptr_ SAFEARRAY ** ppsaVarFileFlags,
+    _Outptr_ SAFEARRAY ** ppsaVarComponentFlags)
 {
     return E_NOTIMPL;
 }
@@ -407,11 +475,11 @@ WINAPI
 catalog_QueryApplicationFile(
     _In_ ICOMAdminCatalog2 *iface,
     _In_ BSTR bstrApplicationFile,
-    _Out_ BSTR *pbstrApplicationName,
-    _Out_ BSTR *pbstrApplicationDescription,
-    _Out_ VARIANT_BOOL *pbHasUsers,
-    _Out_ VARIANT_BOOL *pbIsProxy,
-    _Outptr_ SAFEARRAY **ppsaVarFileNames)
+    _Out_ BSTR * pbstrApplicationName,
+    _Out_ BSTR * pbstrApplicationDescription,
+    _Out_ VARIANT_BOOL * pbHasUsers,
+    _Out_ VARIANT_BOOL * pbIsProxy,
+    _Outptr_ SAFEARRAY ** ppsaVarFileNames)
 {
     return E_NOTIMPL;
 }
@@ -432,7 +500,7 @@ WINAPI
 catalog_ServiceCheck(
     _In_ ICOMAdminCatalog2 *iface,
     _In_ LONG lService,
-    _Out_ LONG *plStatus)
+    _Out_ LONG * plStatus)
 {
     return E_NOTIMPL;
 }
@@ -443,8 +511,8 @@ WINAPI
 catalog_InstallMultipleEventClasses(
     _In_ ICOMAdminCatalog2 *iface,
     _In_ BSTR bstrApplIdOrName,
-    _In_ SAFEARRAY **ppsaVarFileNames,
-    _In_ SAFEARRAY **ppsaVarCLSIDS)
+    _In_ SAFEARRAY ** ppsaVarFileNames,
+    _In_ SAFEARRAY ** ppsaVarCLSIDS)
 {
     return E_NOTIMPL;
 }
@@ -468,9 +536,9 @@ WINAPI
 catalog_GetEventClassesForIID(
     _In_ ICOMAdminCatalog2 *iface,
     _In_ BSTR bstrIID,
-    _Outptr_ SAFEARRAY **ppsaVarCLSIDs,
-    _Outptr_ SAFEARRAY **ppsaVarProgIDs,
-    _Outptr_ SAFEARRAY **ppsaVarDescriptions)
+    _Outptr_ SAFEARRAY ** ppsaVarCLSIDs,
+    _Outptr_ SAFEARRAY ** ppsaVarProgIDs,
+    _Outptr_ SAFEARRAY ** ppsaVarDescriptions)
 {
     return E_NOTIMPL;
 }
@@ -481,8 +549,8 @@ WINAPI
 catalog_GetCollectionByQuery2(
     _In_ ICOMAdminCatalog2 *iface,
     _In_ BSTR bstrCollectionName,
-    _In_ VARIANT *pVarQueryStrings,
-    _Outptr_ IDispatch **ppCatalogCollection)
+    _In_ VARIANT * pVarQueryStrings,
+    _Outptr_ IDispatch ** ppCatalogCollection)
 {
     return E_NOTIMPL;
 }
@@ -493,7 +561,7 @@ WINAPI
 catalog_GetApplicationInstanceIDFromProcessID(
     _In_ ICOMAdminCatalog2 *iface,
     _In_ LONG lProcessID,
-    _Out_ BSTR *pbstrApplicationInstanceID)
+    _Out_ BSTR * pbstrApplicationInstanceID)
 {
     return E_NOTIMPL;
 }
@@ -503,7 +571,7 @@ HRESULT
 WINAPI
 catalog_ShutdownApplicationInstances(
     _In_ ICOMAdminCatalog2 *iface,
-    _In_ VARIANT *pVarApplicationInstanceID)
+    _In_ VARIANT * pVarApplicationInstanceID)
 {
     return E_NOTIMPL;
 }
@@ -513,7 +581,7 @@ HRESULT
 WINAPI
 catalog_PauseApplicationInstances(
     _In_ ICOMAdminCatalog2 *iface,
-    _In_ VARIANT *pVarApplicationInstanceID)
+    _In_ VARIANT * pVarApplicationInstanceID)
 {
     return E_NOTIMPL;
 }
@@ -523,7 +591,7 @@ HRESULT
 WINAPI
 catalog_ResumeApplicationInstances(
     _In_ ICOMAdminCatalog2 *iface,
-    _In_ VARIANT *pVarApplicationInstanceID)
+    _In_ VARIANT * pVarApplicationInstanceID)
 {
     return E_NOTIMPL;
 }
@@ -533,7 +601,7 @@ HRESULT
 WINAPI
 catalog_RecycleApplicationInstances(
     _In_ ICOMAdminCatalog2 *iface,
-    _In_ VARIANT *pVarApplicationInstanceID,
+    _In_ VARIANT * pVarApplicationInstanceID,
     _In_ LONG lReasonCode)
 {
     return E_NOTIMPL;
@@ -544,8 +612,8 @@ HRESULT
 WINAPI
 catalog_AreApplicationInstancesPaused(
     _In_ ICOMAdminCatalog2 *iface,
-    _In_ VARIANT *pVarApplicationInstanceID,
-    _Out_ VARIANT_BOOL *pVarBoolPaused)
+    _In_ VARIANT * pVarApplicationInstanceID,
+    _Out_ VARIANT_BOOL * pVarBoolPaused)
 {
     return E_NOTIMPL;
 }
@@ -558,7 +626,7 @@ catalog_DumpApplicationInstance(
     _In_ BSTR bstrApplicationInstanceID,
     _In_ BSTR bstrDirectory,
     _In_ LONG lMaxImages,
-    _Out_ BSTR *pbstrDumpFile)
+    _Out_ BSTR * pbstrDumpFile)
 {
     return E_NOTIMPL;
 }
@@ -568,7 +636,7 @@ HRESULT
 WINAPI
 catalog_get_IsApplicationInstanceDumpSupported(
     _In_ ICOMAdminCatalog2 *iface,
-    _Out_ VARIANT_BOOL *pVarBoolDumpSupported)
+    _Out_ VARIANT_BOOL * pVarBoolDumpSupported)
 {
     return E_NOTIMPL;
 }
@@ -606,7 +674,7 @@ WINAPI
 catalog_GetPartitionID(
     _In_ ICOMAdminCatalog2 *iface,
     _In_ BSTR bstrApplicationIDOrName,
-    _Out_ BSTR *pbstrPartitionID)
+    _Out_ BSTR * pbstrPartitionID)
 {
     return E_NOTIMPL;
 }
@@ -617,7 +685,7 @@ WINAPI
 catalog_GetPartitionName(
     _In_ ICOMAdminCatalog2 *iface,
     _In_ BSTR bstrApplicationIDOrName,
-    _Out_ BSTR *pbstrPartitionName)
+    _Out_ BSTR * pbstrPartitionName)
 {
     return E_NOTIMPL;
 }
@@ -637,7 +705,7 @@ HRESULT
 WINAPI
 catalog_get_CurrentPartitionID(
     _In_ ICOMAdminCatalog2 *iface,
-    _Out_ BSTR *pbstrPartitionID)
+    _Out_ BSTR * pbstrPartitionID)
 {
     return E_NOTIMPL;
 }
@@ -647,7 +715,7 @@ HRESULT
 WINAPI
 catalog_get_CurrentPartitionName(
     _In_ ICOMAdminCatalog2 *iface,
-    _Out_ BSTR *pbstrPartitionName)
+    _Out_ BSTR * pbstrPartitionName)
 {
     return E_NOTIMPL;
 }
@@ -657,7 +725,7 @@ HRESULT
 WINAPI
 catalog_get_GlobalPartitionID(
     _In_ ICOMAdminCatalog2 *iface,
-    _Out_ BSTR *pbstrGlobalPartitionID)
+    _Out_ BSTR * pbstrGlobalPartitionID)
 {
     return E_NOTIMPL;
 }
@@ -677,7 +745,7 @@ WINAPI
 catalog_CopyApplications(
     _In_ ICOMAdminCatalog2 *iface,
     _In_ BSTR bstrSourcePartitionIDOrName,
-    _In_ VARIANT *pVarApplicationID,
+    _In_ VARIANT * pVarApplicationID,
     _In_ BSTR bstrDestinationPartitionIDOrName)
 {
     return E_NOTIMPL;
@@ -689,7 +757,7 @@ WINAPI
 catalog_CopyComponents(
     _In_ ICOMAdminCatalog2 *iface,
     _In_ BSTR bstrSourceApplicationIDOrName,
-    _In_ VARIANT *pVarCLSIDOrProgID,
+    _In_ VARIANT * pVarCLSIDOrProgID,
     _In_ BSTR bstrDestinationApplicationIDOrName)
 {
     return E_NOTIMPL;
@@ -701,7 +769,7 @@ WINAPI
 catalog_MoveComponents(
     _In_ ICOMAdminCatalog2 *iface,
     _In_ BSTR bstrSourceApplicationIDOrName,
-    _In_ VARIANT *pVarCLSIDOrProgID,
+    _In_ VARIANT * pVarCLSIDOrProgID,
     _In_ BSTR bstrDestinationApplicationIDOrName)
 {
     return E_NOTIMPL;
@@ -727,7 +795,7 @@ WINAPI
 catalog_IsSafeToDelete(
     _In_ ICOMAdminCatalog2 *iface,
     _In_ BSTR bstrDllName,
-    _Out_ COMAdminInUse *pCOMAdminInUse)
+    _Out_ COMAdminInUse * pCOMAdminInUse)
 {
     return E_NOTIMPL;
 }
@@ -738,8 +806,8 @@ WINAPI
 catalog_ImportUnconfiguredComponents(
     _In_ ICOMAdminCatalog2 *iface,
     _In_ BSTR bstrApplicationIDOrName,
-    _In_ VARIANT *pVarCLSIDOrProgID,
-    _In_opt_ VARIANT *pVarComponentType)
+    _In_ VARIANT * pVarCLSIDOrProgID,
+    _In_opt_ VARIANT * pVarComponentType)
 {
     return E_NOTIMPL;
 }
@@ -750,8 +818,8 @@ WINAPI
 catalog_PromoteUnconfiguredComponents(
     _In_ ICOMAdminCatalog2 *iface,
     _In_ BSTR bstrApplicationIDOrName,
-    _In_ VARIANT *pVarCLSIDOrProgID,
-    _In_opt_ VARIANT *pVarComponentType)
+    _In_ VARIANT * pVarCLSIDOrProgID,
+    _In_opt_ VARIANT * pVarComponentType)
 {
     return E_NOTIMPL;
 }
@@ -762,8 +830,8 @@ WINAPI
 catalog_ImportComponents(
     _In_ ICOMAdminCatalog2 *iface,
     _In_ BSTR bstrApplicationIDOrName,
-    _In_ VARIANT *pVarCLSIDOrProgID,
-    _In_opt_ VARIANT *pVarComponentType)
+    _In_ VARIANT * pVarCLSIDOrProgID,
+    _In_opt_ VARIANT * pVarComponentType)
 {
     return E_NOTIMPL;
 }
@@ -801,7 +869,7 @@ WINAPI
 catalog_QueryApplicationFile2(
     _In_ ICOMAdminCatalog2 *iface,
     _In_ BSTR bstrApplicationFile,
-    _Outptr_ IDispatch **ppFilesForImport)
+    _Outptr_ IDispatch ** ppFilesForImport)
 {
     return E_NOTIMPL;
 }
@@ -812,7 +880,7 @@ WINAPI
 catalog_GetComponentVersionCount(
     _In_ ICOMAdminCatalog2 *iface,
     _In_ BSTR bstrCLSIDOrProgID,
-    _Out_ LONG *plVersionCount)
+    _Out_ LONG * plVersionCount)
 {
     return E_NOTIMPL;
 }
@@ -887,6 +955,7 @@ static const ICOMAdminCatalog2Vtbl g_CatalogVtbl =
 
 HRESULT
 ComAdminCreateCatalog(
+    _In_opt_ IUnknown *Outer,
     _In_ REFIID Riid,
     _Outptr_ PVOID *Object)
 {
@@ -895,15 +964,20 @@ ComAdminCreateCatalog(
 
     *Object = NULL;
 
+    if (Outer != NULL && !IsEqualIID(Riid, &IID_IUnknown))
+        return CLASS_E_NOAGGREGATION;
+
     This = HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, sizeof(*This));
     if (This == NULL)
         return E_OUTOFMEMORY;
 
     This->ICOMAdminCatalog2_iface.lpVtbl = &g_CatalogVtbl;
+    This->IUnknown_inner.lpVtbl = &g_InnerVtbl;
+    This->pOuter = Outer;
     This->RefCount = 1;
     InterlockedIncrement(&g_ObjectCount);
 
-    hr = ICOMAdminCatalog2_QueryInterface(&This->ICOMAdminCatalog2_iface, Riid, Object);
-    ICOMAdminCatalog2_Release(&This->ICOMAdminCatalog2_iface);
+    hr = IUnknown_QueryInterface(&This->IUnknown_inner, Riid, Object);
+    IUnknown_Release(&This->IUnknown_inner);
     return hr;
 }
